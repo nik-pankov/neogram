@@ -3,29 +3,46 @@
 export function WelcomeScreen() {
   return (
     <div
-      className="flex-1 h-full flex flex-col items-center justify-center gap-4"
-      style={{ background: "var(--tg-chat-bg)" }}
+      className="flex-1 h-full flex flex-col items-center justify-center gap-6 chat-bg"
     >
-      {/* Telegram-like chat pattern background */}
-      <div className="absolute inset-0 opacity-5 pointer-events-none"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-        }}
-      />
-      <div className="relative z-10 flex flex-col items-center gap-4 text-center px-6">
+      <div className="flex flex-col items-center gap-4 text-center px-8 max-w-sm">
+        {/* Logo */}
         <div
-          className="w-24 h-24 rounded-full flex items-center justify-center text-4xl shadow-lg"
-          style={{ background: "var(--tg-message-out)" }}
+          className="w-24 h-24 rounded-full flex items-center justify-center text-4xl shadow-2xl"
+          style={{
+            background: "linear-gradient(135deg, var(--tg-accent), #3a6d9e)",
+            boxShadow: "0 8px 32px rgba(82,136,193,0.3)",
+          }}
         >
-          💬
+          ✈️
         </div>
+
+        {/* Title */}
         <div>
-          <h2 className="text-xl font-semibold mb-2" style={{ color: "var(--tg-text)" }}>
+          <h2 className="text-2xl font-bold mb-2" style={{ color: "var(--tg-text)" }}>
             NeoGram
           </h2>
-          <p className="text-sm max-w-xs" style={{ color: "var(--tg-text-secondary)" }}>
-            Select a chat to start messaging. Your messages are fast and secure.
+          <p className="text-sm leading-relaxed" style={{ color: "var(--tg-text-secondary)" }}>
+            Select a chat from the left panel to start messaging.
+            Your conversations are fast, secure and always in sync.
           </p>
+        </div>
+
+        {/* Feature pills */}
+        <div className="flex flex-wrap gap-2 justify-center mt-2">
+          {["🔒 Encrypted", "⚡ Real-time", "📱 Cross-platform", "☁️ Cloud sync"].map((feat) => (
+            <span
+              key={feat}
+              className="px-3 py-1 rounded-full text-xs font-medium"
+              style={{
+                background: "rgba(82,136,193,0.12)",
+                color: "var(--tg-text-secondary)",
+                border: "1px solid rgba(82,136,193,0.2)",
+              }}
+            >
+              {feat}
+            </span>
+          ))}
         </div>
       </div>
     </div>

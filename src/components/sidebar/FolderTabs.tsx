@@ -6,6 +6,7 @@ interface Folder {
   id: string | null;
   name: string;
   emoji: string | null;
+  unread?: number;
 }
 
 interface FolderTabsProps {
@@ -22,8 +23,8 @@ export function FolderTabs({ folders, activeFolder, onFolderChange }: FolderTabs
   return (
     <div
       ref={scrollRef}
-      className="flex items-center gap-0 overflow-x-auto no-scrollbar flex-shrink-0 px-1"
-      style={{ borderBottom: "1px solid var(--tg-border)" }}
+      className="flex items-center overflow-x-auto no-scrollbar flex-shrink-0"
+      style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}
     >
       {folders.map((folder) => {
         const isActive = activeFolder === folder.id;
@@ -31,16 +32,22 @@ export function FolderTabs({ folders, activeFolder, onFolderChange }: FolderTabs
           <button
             key={folder.id ?? "all"}
             onClick={() => onFolderChange(folder.id)}
-            className="relative flex items-center gap-1.5 px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0"
-            style={{
-              color: isActive ? "var(--tg-accent)" : "var(--tg-text-secondary)",
-            }}
+            className="relative flex items-center gap-1.5 px-4 py-3 text-xs font-medium whitespace-nowrap transition-colors flex-shrink-0"
+            style={{ color: isActive ? "var(--tg-accent)" : "var(--tg-text-secondary)" }}
           >
-            {folder.emoji && <span className="text-base">{folder.emoji}</span>}
-            <span>{folder.name}</span>
+            {folder.emoji && <span className="text-sm">{folder.emoji}</span>}
+            <span className="uppercase tracking-wide text-[11px]">{folder.name}</span>
+            {(folder.unread ?? 0) > 0 && !isActive && (
+              <span
+                className="min-w-[16px] h-4 rounded-full text-[10px] font-semibold flex items-center justify-center px-1"
+                style={{ background: "var(--tg-unread)", color: "#fff" }}
+              >
+                {folder.unread}
+              </span>
+            )}
             {isActive && (
               <span
-                className="absolute bottom-0 left-0 right-0 h-0.5 rounded-t-full"
+                className="absolute bottom-0 left-2 right-2 h-0.5 rounded-full"
                 style={{ background: "var(--tg-accent)" }}
               />
             )}
