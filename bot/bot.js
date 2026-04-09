@@ -96,16 +96,19 @@ function runClaudeCode(prompt, chatId, editMsgId) {
   return new Promise((resolve, reject) => {
     // Check if claude CLI exists
     const args = [
-      "--print",           // non-interactive, print output
-      "--no-color",        // plain text
+      "--print",
       "--output-format", "text",
-      prompt,
+      "--dangerously-skip-permissions",
     ];
 
     const proc = spawn(CLAUDE_BIN, args, {
       cwd: WORK_DIR,
       env: { ...process.env, NO_COLOR: "1", TERM: "dumb" },
     });
+
+    // Pass prompt via stdin
+    proc.stdin.write(prompt);
+    proc.stdin.end();
 
     activeTasks.set(chatId, { proc, msgId: editMsgId });
 
