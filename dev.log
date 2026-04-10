@@ -1,0 +1,170 @@
+
+> neogram@0.1.0 dev
+> next dev
+
+▲ Next.js 16.2.3 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.1.50:3000
+- Environments: .env.local
+✓ Ready in 281ms
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+
+⨯ The file "./src/proxy.ts" must export a function, either as a default export or as a named "proxy" export.
+This function is what Next.js runs for every request handled by this proxy (previously called middleware).
+
+Why this happens:
+- You are migrating from `middleware` to `proxy`, but haven't updated the exported function.
+- The file exists but doesn't export a function.
+- The export is not a function (e.g., an object or constant).
+- There's a syntax error preventing the export from being recognized.
+
+To fix it:
+- Ensure this file has either a default or "proxy" function export.
+
+Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+✓ Compiled in 295ms
+✓ Compiled in 19ms
+ GET /login 200 in 746ms (next.js: 598ms, proxy.ts: 3ms, application-code: 145ms)
+ GET /icons/icon-192.png 404 in 42ms (next.js: 17ms, application-code: 24ms)
+[browser] Uncaught NotFoundError: Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node.
+    at LoginForm (src/components/auth/LoginForm.tsx:85:15)
+    at LoginPage (src/app/login/page.tsx:4:10)
+  83 |           >
+  84 |             {googleLoading ? (
+> 85 |               <Loader2 size={18} className="animate-spin" />
+     |               ^
+  86 |             ) : (
+  87 |               <svg width="18" height="18" viewBox="0 0 24 24">
+  88 |                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-...
+ GET /icons/icon-192.png 404 in 31ms (next.js: 5ms, application-code: 26ms)
+ GET /register 200 in 338ms (next.js: 296ms, proxy.ts: 5ms, application-code: 37ms)
+ GET /icons/icon-192.png 404 in 27ms (next.js: 3ms, application-code: 24ms)
+ GET /icons/icon-192.png 404 in 26ms (next.js: 4ms, application-code: 22ms)
+ GET /register? 200 in 54ms (next.js: 3ms, proxy.ts: 6ms, application-code: 44ms)
+ GET /icons/icon-192.png 404 in 31ms (next.js: 4ms, application-code: 28ms)
+ GET /login 200 in 46ms (next.js: 5ms, proxy.ts: 5ms, application-code: 37ms)
+ GET /icons/icon-192.png 404 in 24ms (next.js: 2ms, application-code: 22ms)
+[browser] Uncaught NotFoundError: Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node.
+    at LoginForm (src/components/auth/LoginForm.tsx:159:27)
+    at LoginPage (src/app/login/page.tsx:4:10)
+  157 |               style={{ background: "var(--tg-accent)", color: "#fff" }}
+  158 |             >
+> 159 |               {loading && <Loader2 size={16} className="animate-spin" />}
+      |                           ^
+  160 |               Sign In
+  161 |             </button>
+  162 |           </form>
+⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ GET /login 200 in 38ms (next.js: 6ms, proxy.ts: 5ms, application-code: 28ms)
+✓ Compiled in 31ms
+ GET /icons/icon-192.png 404 in 23ms (next.js: 3ms, application-code: 20ms)
+ GET /register 200 in 38ms (next.js: 7ms, proxy.ts: 9ms, application-code: 22ms)
+ GET /icons/icon-192.png 404 in 31ms (next.js: 3ms, application-code: 29ms)
+✓ Compiled in 37ms
+✓ Compiled in 15ms
+ GET /auth/callback?code=ebe1c702-1a6f-4a29-b347-64dbc1f9554e 307 in 683ms (next.js: 304ms, proxy.ts: 5ms, application-code: 374ms)
+ GET / 200 in 223ms (next.js: 20ms, proxy.ts: 140ms, application-code: 63ms)
+✓ Compiled in 36ms
+ GET /icons/icon-192.png 404 in 29ms (next.js: 9ms, application-code: 20ms)
+ GET / 200 in 365ms (next.js: 6ms, proxy.ts: 334ms, application-code: 25ms)
+ GET / 200 in 152ms (next.js: 3ms, proxy.ts: 130ms, application-code: 20ms)
+ GET / 200 in 144ms (next.js: 2ms, proxy.ts: 125ms, application-code: 17ms)
+ GET / 200 in 147ms (next.js: 4ms, proxy.ts: 128ms, application-code: 14ms)
+ GET / 200 in 156ms (next.js: 2ms, proxy.ts: 123ms, application-code: 31ms)
+ GET /icons/icon-192.png 404 in 22ms (next.js: 2ms, application-code: 20ms)
+ GET / 200 in 407ms (next.js: 7ms, proxy.ts: 364ms, application-code: 37ms)
+ GET /icons/icon-192.png 404 in 23ms (next.js: 3ms, application-code: 20ms)
+ GET /login 200 in 39ms (next.js: 5ms, proxy.ts: 3ms, application-code: 31ms)
+ GET /register 200 in 24ms (next.js: 5ms, proxy.ts: 5ms, application-code: 13ms)
+ GET /login 200 in 29ms (next.js: 6ms, proxy.ts: 7ms, application-code: 17ms)
+ GET / 200 in 538ms (next.js: 4ms, proxy.ts: 517ms, application-code: 17ms)
+ GET / 200 in 141ms (next.js: 1566µs, proxy.ts: 128ms, application-code: 11ms)
+✓ Compiled in 86ms
+[browser] openPrivateChat error: {"code":"42P17","details":null,"hint":null,"message":"infinite recursion detected in policy for relation \"chat_members\""} 
+    at useCreateChat.useCallback[openPrivateChat] (src/hooks/useCreateChat.ts:84:17)
+    at async handleSelect (src/components/sidebar/NewChatModal.tsx:20:39)
+  82 |       } catch (err: unknown) {
+  83 |         const msg = err instanceof Error ? err.message : JSON.stringify(err);
+> 84 |         console.error("openPrivateChat error:", msg);
+     |                 ^
+  85 |         setError(msg);
+  86 |         setLoading(false);
+  87 |         return null; (src/hooks/useCreateChat.ts:84:17)
+ GET / 200 in 628ms (next.js: 42ms, proxy.ts: 530ms, application-code: 56ms)
+ GET /icons/icon-192.png 404 in 34ms (next.js: 3ms, application-code: 30ms)
+✓ Compiled in 310ms
+ GET / 200 in 852ms (next.js: 61ms, proxy.ts: 751ms, application-code: 40ms)
+ GET / 200 in 762ms (next.js: 2ms, proxy.ts: 744ms, application-code: 16ms)
+ GET / 200 in 181ms (next.js: 2ms, proxy.ts: 157ms, application-code: 22ms)
+ GET / 200 in 179ms (next.js: 1901µs, proxy.ts: 164ms, application-code: 13ms)
+ GET / 200 in 150ms (next.js: 3ms, proxy.ts: 134ms, application-code: 14ms)
+ GET / 200 in 225ms (next.js: 5ms, proxy.ts: 148ms, application-code: 72ms)
+ GET /icons/icon-192.png 404 in 64ms (next.js: 11ms, application-code: 53ms)
+✓ Compiled in 55ms
+ GET / 200 in 2.2s (next.js: 7ms, proxy.ts: 2.0s, application-code: 109ms)
+ GET /icons/icon-192.png 404 in 25ms (next.js: 3ms, application-code: 21ms)
+ GET / 200 in 284ms (next.js: 5ms, proxy.ts: 241ms, application-code: 39ms)
+ GET /icons/icon-192.png 404 in 22ms (next.js: 1752µs, application-code: 20ms)
+[browser] Uncaught Error: cannot add `postgres_changes` callbacks for realtime:chats-realtime after `subscribe()`.
+    at useChats.useEffect (src/hooks/useChats.ts:119:8)
+    at Sidebar (src/components/sidebar/Sidebar.tsx:74:9)
+    at MainLayout (src/components/layout/MainLayout.tsx:35:11)
+    at Home (src/app/page.tsx:4:10)
+  117 |     const channel = supabase
+  118 |       .channel("chats-realtime")
+> 119 |       .on(
+      |        ^
+  120 |         "postgres_changes",
+  121 |         { event: "INSERT", schema: "public", table: "messages" },
+  122 |         () => fetchChats()
+⚠ Fast Refresh had to perform a full reload due to a runtime error.
+✓ Compiled in 41ms
+ GET /? 200 in 473ms (next.js: 2ms, proxy.ts: 444ms, application-code: 27ms)
+ GET /icons/icon-192.png 404 in 22ms (next.js: 2ms, application-code: 20ms)
+[browser] Uncaught Error: cannot add `postgres_changes` callbacks for realtime:chats-realtime after `subscribe()`.
+    at useChats.useEffect (src/hooks/useChats.ts:119:8)
+    at Sidebar (src/components/sidebar/Sidebar.tsx:74:9)
+    at MainLayout (src/components/layout/MainLayout.tsx:35:11)
+    at Home (src/app/page.tsx:4:10)
+  117 |     const channel = supabase
+  118 |       .channel("chats-realtime")
+> 119 |       .on(
+      |        ^
+  120 |         "postgres_changes",
+  121 |         { event: "INSERT", schema: "public", table: "messages" },
+  122 |         () => fetchChats()
+ GET / 200 in 2.8s (next.js: 4ms, proxy.ts: 2.7s, application-code: 42ms)
+ GET /icons/icon-192.png 404 in 22ms (next.js: 1886µs, application-code: 21ms)
+✓ Compiled in 67ms
+ GET / 200 in 490ms (next.js: 68ms, proxy.ts: 364ms, application-code: 57ms)
+ GET / 200 in 414ms (next.js: 6ms, proxy.ts: 381ms, application-code: 27ms)
+ GET / 200 in 168ms (next.js: 1863µs, proxy.ts: 156ms, application-code: 10ms)
+ GET / 200 in 229ms (next.js: 4ms, proxy.ts: 155ms, application-code: 70ms)
+ GET /icons/icon-192.png 404 in 61ms (next.js: 11ms, application-code: 49ms)
+✓ Compiled in 19ms
+✓ Compiled in 52ms
+ GET / 200 in 686ms (next.js: 58ms, proxy.ts: 607ms, application-code: 21ms)
+ GET / 200 in 214ms (next.js: 5ms, proxy.ts: 188ms, application-code: 21ms)
+ GET / 200 in 222ms (next.js: 3ms, proxy.ts: 204ms, application-code: 15ms)
+ GET / 200 in 1729ms (next.js: 3ms, proxy.ts: 1697ms, application-code: 28ms)
+ GET / 200 in 216ms (next.js: 4ms, proxy.ts: 183ms, application-code: 28ms)
+ GET / 200 in 206ms (next.js: 4ms, proxy.ts: 178ms, application-code: 24ms)
+ GET /icons/icon-192.png 404 in 67ms (next.js: 13ms, application-code: 54ms)
+✓ Compiled in 32ms
+✓ Compiled in 0ms
+ GET / 200 in 694ms (next.js: 57ms, proxy.ts: 613ms, application-code: 24ms)
+ GET / 200 in 160ms (next.js: 3ms, proxy.ts: 141ms, application-code: 16ms)
+ GET / 200 in 146ms (next.js: 2ms, proxy.ts: 129ms, application-code: 14ms)
+ GET /icons/icon-192.png 404 in 76ms (next.js: 12ms, application-code: 64ms)
+ GET / 200 in 2.3s (next.js: 2ms, proxy.ts: 2.3s, application-code: 14ms)
+ GET / 200 in 201ms (next.js: 3ms, proxy.ts: 183ms, application-code: 15ms)
+ GET / 200 in 151ms (next.js: 3ms, proxy.ts: 137ms, application-code: 12ms)
+✓ Compiled in 22ms
+✓ Compiled in 17ms
+✓ Compiled in 17ms
+✓ Compiled in 16ms
+✓ Compiled in 18ms
+✓ Compiled in 33ms
+✓ Compiled in 17ms
+✓ Compiled in 45ms
+ GET /icons/icon-192.png 404 in 68ms (next.js: 17ms, application-code: 51ms)

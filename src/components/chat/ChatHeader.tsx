@@ -9,9 +9,10 @@ import type { ChatWithLastMessage } from "@/types/database";
 interface ChatHeaderProps {
   chatId: string;
   chat?: ChatWithLastMessage;
+  onSearchOpen?: () => void;
 }
 
-export function ChatHeader({ chatId, chat }: ChatHeaderProps) {
+export function ChatHeader({ chatId, chat, onSearchOpen }: ChatHeaderProps) {
   const { setSelectedChatId } = useAppStore();
   const [showMenu, setShowMenu] = useState(false);
 
@@ -40,10 +41,10 @@ export function ChatHeader({ chatId, chat }: ChatHeaderProps) {
   const isOnline = subtitle === "online";
 
   const menuItems = [
-    { icon: Search, label: "Search in chat" },
-    { icon: Bell, label: "Mute notifications" },
-    { icon: Trash2, label: "Clear history", danger: true },
-    { icon: UserX, label: "Delete chat", danger: true },
+    { icon: Search, label: "Search in chat", action: () => { setShowMenu(false); onSearchOpen?.(); } },
+    { icon: Bell, label: "Mute notifications", action: () => setShowMenu(false) },
+    { icon: Trash2, label: "Clear history", danger: true, action: () => setShowMenu(false) },
+    { icon: UserX, label: "Delete chat", danger: true, action: () => setShowMenu(false) },
   ];
 
   return (
@@ -109,11 +110,11 @@ export function ChatHeader({ chatId, chat }: ChatHeaderProps) {
             <>
               <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
               <div className="absolute right-0 top-10 w-52 rounded-xl overflow-hidden shadow-xl z-50 context-menu">
-                {menuItems.map(({ icon: Icon, label, danger }) => (
+                {menuItems.map(({ icon: Icon, label, danger, action }) => (
                   <button key={label}
                     className="flex items-center gap-3 w-full px-4 py-2.5 text-sm transition-colors hover:bg-white/8"
                     style={{ color: danger ? "#ef4444" : "var(--tg-text)" }}
-                    onClick={() => setShowMenu(false)}>
+                    onClick={action}>
                     <Icon size={16} />
                     {label}
                   </button>

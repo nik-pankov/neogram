@@ -7,77 +7,105 @@ import type { Profile } from "@/types/database";
 
 export function useCreateChat() {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { currentUser, setSelectedChatId } = useAppStore();
   const supabase = createClient();
 
-  // Find or create private chat with another user
   const openPrivateChat = useCallback(
-    async (otherUserId: string) => {
-      if (!currentUser) return;
+    async (otherUserId: string): Promise<string | null> => {
+      if (!currentUser) { setError("Not logged in"); return null; }
       setLoading(true);
+      setError(null);
 
-      // Check if private chat already exists between these two users
-      const { data: existing } = await supabase
-        .from("chat_members")
-        .select("chat_id")
-        .eq("user_id", currentUser.id);
-
-      if (existing?.length) {
-        const myChats = existing.map((m) => m.chat_id);
-        const { data: shared } = await supabase
+      try {
+        // 1. Find chats where current user is a member
+        const { data: myMemberships, error: e1 } = await supabase
           .from("chat_members")
-          .select("chat_id, chats!inner(type)")
-          .eq("user_id", otherUserId)
-          .in("chat_id", myChats);
+          .select("chat_id")
+          .eq("user_id", currentUser.id);
 
-        const privateShared = (shared as { chat_id: string; chats: { type: string } }[])
-          ?.find((m) => m.chats?.type === "private");
+        if (e1) throw e1;
 
-        if (privateShared) {
-          setSelectedChatId(privateShared.chat_id);
-          setLoading(false);
-          return privateShared.chat_id;
+        // 2. Among those chats, find one where other user is also a member
+        if (myMemberships && myMemberships.length > 0) {
+          const myIds = myMemberships.map((m) => m.chat_id);
+
+          const { data: otherMemberships, error: e2 } = await supabase
+            .from("chat_members")
+            .select("chat_id")
+            .eq("user_id", otherUserId)
+            .in("chat_id", myIds);
+
+          if (e2) throw e2;
+
+          if (otherMemberships && otherMemberships.length > 0) {
+            // Verify it's a private chat
+            const sharedIds = otherMemberships.map((m) => m.chat_id);
+            const { data: privateChatData } = await supabase
+              .from("chats")
+              .select("id")
+              .eq("type", "private")
+              .in("id", sharedIds)
+              .limit(1)
+              .single();
+
+            if (privateChatData) {
+              setSelectedChatId(privateChatData.id);
+              setLoading(false);
+              return privateChatData.id;
+            }
+          }
         }
+
+        // 3. No existing chat — create one
+        const { data: newChat, error: e3 } = await supabase
+          .from("chats")
+          .insert({ type: "private", created_by: currentUser.id })
+          .select("id")
+          .single();
+
+        if (e3) throw e3;
+        if (!newChat) throw new Error("Failed to create chat");
+
+        // 4. Add both members
+        const { error: e4 } = await supabase.from("chat_members").insert([
+          { chat_id: newChat.id, user_id: currentUser.id, role: "owner" },
+          { chat_id: newChat.id, user_id: otherUserId, role: "member" },
+        ]);
+
+        if (e4) throw e4;
+
+        setSelectedChatId(newChat.id);
+        setLoading(false);
+        return newChat.id;
+
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : JSON.stringify(err);
+        console.error("openPrivateChat error:", msg);
+        setError(msg);
+        setLoading(false);
+        return null;
       }
-
-      // Create new private chat
-      const { data: chat } = await supabase
-        .from("chats")
-        .insert({ type: "private", created_by: currentUser.id })
-        .select()
-        .single();
-
-      if (!chat) { setLoading(false); return null; }
-
-      // Add both members
-      await supabase.from("chat_members").insert([
-        { chat_id: chat.id, user_id: currentUser.id, role: "owner" },
-        { chat_id: chat.id, user_id: otherUserId, role: "member" },
-      ]);
-
-      setSelectedChatId(chat.id);
-      setLoading(false);
-      return chat.id;
     },
     [currentUser, supabase, setSelectedChatId]
   );
 
-  // Search users by name or username
   const searchUsers = useCallback(
     async (query: string): Promise<Profile[]> => {
       if (!query.trim() || !currentUser) return [];
 
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("profiles")
         .select("*")
         .neq("id", currentUser.id)
         .or(`full_name.ilike.%${query}%,username.ilike.%${query}%`)
         .limit(20);
 
+      if (error) console.error("searchUsers error:", error);
       return (data as Profile[]) ?? [];
     },
     [currentUser, supabase]
   );
 
-  return { openPrivateChat, searchUsers, loading };
+  return { openPrivateChat, searchUsers, loading, error };
 }

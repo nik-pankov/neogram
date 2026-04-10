@@ -1,12 +1,14 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { ChatHeader } from "./ChatHeader";
 import { PinnedMessage } from "./PinnedMessage";
 import { MessageList } from "./MessageList";
 import { MessageInput } from "./MessageInput";
+import { ChatSearchBar } from "./ChatSearchBar";
 import { useMessages } from "@/hooks/useMessages";
 import { useAppStore } from "@/store/app.store";
+import { createClient } from "@/lib/supabase/client";
 import type { MessageWithSender } from "@/types/database";
 import { Loader2 } from "lucide-react";
 
@@ -16,9 +18,13 @@ interface ChatWindowProps {
 
 export function ChatWindow({ chatId }: ChatWindowProps) {
   const { messages, loading, isTyping, sendMessage, toggleReaction } = useMessages(chatId);
-  const { chats } = useAppStore();
+  const { chats, currentUser } = useAppStore();
   const [replyTo, setReplyTo] = useState<MessageWithSender | null>(null);
+  const [showSearch, setShowSearch] = useState(false);
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const messageRefs = useRef<Record<string, HTMLDivElement>>({});
+  const supabase = createClient();
 
   const chat = chats.find((c) => c.id === chatId);
   const pinnedMessage = messages.find((m) => m.pinned);
@@ -28,17 +34,59 @@ export function ChatWindow({ chatId }: ChatWindowProps) {
     setReplyTo(null);
   };
 
-  const handleReaction = async (messageId: string, emoji: string) => {
-    await toggleReaction(messageId, emoji);
-  };
+  const handleSendVoice = useCallback(async (blob: Blob, duration: number) => {
+    if (!currentUser) return;
+    // Upload to Supabase Storage
+    const filename = `voice_${Date.now()}.webm`;
+    const { data, error } = await supabase.storage
+      .from("media")
+      .upload(`${currentUser.id}/${filename}`, blob, { contentType: "audio/webm" });
+
+    if (error) { console.error("Voice upload error:", error); return; }
+
+    const { data: { publicUrl } } = supabase.storage.from("media").getPublicUrl(data.path);
+
+    // Insert message with type=audio
+    await supabase.from("messages").insert({
+      chat_id: chatId,
+      user_id: currentUser.id,
+      type: "audio",
+      media_url: publicUrl,
+      content: `🎤 Voice message (${Math.floor(duration / 60)}:${String(duration % 60).padStart(2, "0")})`,
+    });
+
+    await supabase.from("chats").update({ updated_at: new Date().toISOString() }).eq("id", chatId);
+  }, [chatId, currentUser, supabase]);
+
+  const jumpToMessage = useCallback((messageId: string) => {
+    setHighlightedId(messageId);
+    const el = messageRefs.current[messageId];
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      setTimeout(() => setHighlightedId(null), 2000);
+    }
+  }, []);
 
   return (
     <div className="flex flex-col h-full w-full" style={{ background: "var(--tg-chat-bg)" }}>
-      <ChatHeader chatId={chatId} chat={chat} />
+      <ChatHeader
+        chatId={chatId}
+        chat={chat}
+        onSearchOpen={() => setShowSearch(true)}
+      />
+
+      {showSearch && (
+        <ChatSearchBar
+          messages={messages}
+          onClose={() => setShowSearch(false)}
+          onJumpTo={jumpToMessage}
+        />
+      )}
+
       {pinnedMessage && <PinnedMessage message={pinnedMessage} />}
 
       {loading ? (
-        <div className="flex-1 flex items-center justify-center">
+        <div className="flex-1 flex items-center justify-center chat-bg">
           <Loader2 size={28} className="animate-spin" style={{ color: "var(--tg-text-secondary)" }} />
         </div>
       ) : messages.length === 0 ? (
@@ -54,9 +102,11 @@ export function ChatWindow({ chatId }: ChatWindowProps) {
         <MessageList
           messages={messages}
           onReply={setReplyTo}
-          onReaction={handleReaction}
+          onReaction={toggleReaction}
           bottomRef={bottomRef}
           isTyping={isTyping}
+          highlightedId={highlightedId}
+          messageRefs={messageRefs}
         />
       )}
 
@@ -65,6 +115,7 @@ export function ChatWindow({ chatId }: ChatWindowProps) {
         replyTo={replyTo}
         onCancelReply={() => setReplyTo(null)}
         onSend={handleSend}
+        onSendVoice={handleSendVoice}
       />
     </div>
   );

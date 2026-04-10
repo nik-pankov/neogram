@@ -1,6 +1,6 @@
 "use client";
 
-import { RefObject, useState, useEffect, useCallback, useRef } from "react";
+import React, { RefObject, useState, useEffect, useCallback, useRef } from "react";
 import { ChevronDown } from "lucide-react";
 import { MessageBubble } from "./MessageBubble";
 import { TypingIndicator } from "./TypingIndicator";
@@ -16,6 +16,8 @@ interface MessageListProps {
   bottomRef: RefObject<HTMLDivElement | null>;
   isTyping?: boolean;
   typingUser?: string;
+  highlightedId?: string | null;
+  messageRefs?: React.MutableRefObject<Record<string, HTMLDivElement>>;
 }
 
 function shouldShowDateSeparator(prev: MessageWithSender | null, current: MessageWithSender): boolean {
@@ -30,6 +32,8 @@ export function MessageList({
   bottomRef,
   isTyping = false,
   typingUser,
+  highlightedId,
+  messageRefs,
 }: MessageListProps) {
   const { currentUser } = useAppStore();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -86,7 +90,10 @@ export function MessageList({
             !shouldShowDateSeparator(msg, next);
 
           return (
-            <div key={msg.id}>
+            <div key={msg.id} ref={(el) => { if (el && messageRefs) messageRefs.current[msg.id] = el; }}
+              className={highlightedId === msg.id ? "transition-colors duration-500" : ""}
+              style={highlightedId === msg.id ? { background: "rgba(82,136,193,0.18)", borderRadius: "8px" } : {}}
+            >
               {showDate && (
                 <div className="flex justify-center my-3">
                   <span

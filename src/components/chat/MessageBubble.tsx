@@ -5,6 +5,7 @@ import { Check, CheckCheck, Reply, Forward, Trash2, Pin, Copy, Smile } from "luc
 import type { MessageWithSender } from "@/types/database";
 import { formatFullTime } from "@/lib/format";
 import { UserAvatar } from "@/components/ui/ChatAvatar";
+import { AudioMessage } from "./AudioMessage";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/store/app.store";
 
@@ -239,13 +240,17 @@ export function MessageBubble({
               </div>
             )}
 
-            {/* Text */}
-            <p
-              className="text-sm leading-relaxed whitespace-pre-wrap break-words"
-              style={{ color: "var(--tg-text)" }}
-            >
-              {message.content}
-            </p>
+            {/* Content */}
+            {message.type === "audio" && message.media_url ? (
+              <AudioMessage url={message.media_url} isMe={isMe} />
+            ) : (
+              <p
+                className="text-sm leading-relaxed whitespace-pre-wrap break-words"
+                style={{ color: "var(--tg-text)" }}
+              >
+                {message.content}
+              </p>
+            )}
 
             {/* Time + status row */}
             <div className="flex items-center justify-end gap-1 mt-1 -mb-0.5">
