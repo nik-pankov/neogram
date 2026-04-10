@@ -6,6 +6,7 @@ import type { MessageWithSender } from "@/types/database";
 import { formatFullTime } from "@/lib/format";
 import { UserAvatar } from "@/components/ui/ChatAvatar";
 import { cn } from "@/lib/utils";
+import { useAppStore } from "@/store/app.store";
 
 const EMOJI_QUICK = ["👍", "❤️", "😂", "😮", "😢", "🔥", "👏", "🎉"];
 
@@ -38,6 +39,7 @@ export function MessageBubble({
   const [contextPos, setContextPos] = useState({ x: 0, y: 0 });
   const [selected, setSelected] = useState(false);
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { currentUser } = useAppStore();
 
   const bgColor = isMe ? "var(--tg-message-out)" : "var(--tg-message-in)";
 
@@ -46,7 +48,7 @@ export function MessageBubble({
     (acc, r) => {
       if (!acc[r.emoji]) acc[r.emoji] = { count: 0, mine: false };
       acc[r.emoji].count++;
-      if (r.user_id === "me") acc[r.emoji].mine = true;
+      if (r.user_id === currentUser?.id) acc[r.emoji].mine = true;
       return acc;
     },
     {}
@@ -172,7 +174,7 @@ export function MessageBubble({
               <div className="w-0.5 rounded-full flex-shrink-0 self-stretch" style={{ background: "var(--tg-accent)" }} />
               <div className="min-w-0">
                 <div className="font-semibold truncate" style={{ color: "var(--tg-accent)" }}>
-                  {message.reply_to.user_id === "me" ? "You" : message.reply_to.sender?.full_name ?? "Unknown"}
+                  {message.reply_to.user_id === currentUser?.id ? "You" : message.reply_to.sender?.full_name ?? "Unknown"}
                 </div>
                 <div className="truncate opacity-70" style={{ color: "var(--tg-text)" }}>
                   {message.reply_to.content}

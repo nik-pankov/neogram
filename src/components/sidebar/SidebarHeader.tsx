@@ -6,7 +6,7 @@ import { useAppStore } from "@/store/app.store";
 import { useUser } from "@/hooks/useUser";
 import { UserAvatar } from "@/components/ui/ChatAvatar";
 
-export function SidebarHeader() {
+export function SidebarHeader({ onNewChat }: { onNewChat?: () => void }) {
   const { searchQuery, setSearchQuery, currentUser } = useAppStore();
   const { signOut } = useUser();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -113,6 +113,7 @@ export function SidebarHeader() {
 
         {!isSearchFocused && !searchQuery && (
           <button
+            onClick={onNewChat}
             className="p-2 rounded-full transition-colors hover:bg-white/10"
             style={{ color: "var(--tg-accent)" }}
           >

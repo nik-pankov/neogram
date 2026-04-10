@@ -7,6 +7,7 @@ import { TypingIndicator } from "./TypingIndicator";
 import type { MessageWithSender } from "@/types/database";
 import { formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { useAppStore } from "@/store/app.store";
 
 interface MessageListProps {
   messages: MessageWithSender[];
@@ -30,6 +31,7 @@ export function MessageList({
   isTyping = false,
   typingUser,
 }: MessageListProps) {
+  const { currentUser } = useAppStore();
   const containerRef = useRef<HTMLDivElement>(null);
   const [showScrollBtn, setShowScrollBtn] = useState(false);
   const [newCount, setNewCount] = useState(0);
@@ -78,7 +80,7 @@ export function MessageList({
           const prev = idx > 0 ? messages[idx - 1] : null;
           const next = idx < messages.length - 1 ? messages[idx + 1] : null;
           const showDate = shouldShowDateSeparator(prev, msg);
-          const isMe = msg.user_id === "me";
+          const isMe = msg.user_id === currentUser?.id;
           const isSameSenderAsPrev = !showDate && prev?.user_id === msg.user_id;
           const isSameSenderAsNext = next?.user_id === msg.user_id &&
             !shouldShowDateSeparator(msg, next);

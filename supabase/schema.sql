@@ -3,7 +3,6 @@
 -- Run this in Supabase SQL Editor
 -- ============================================================
 
--- Enable UUID extension
 create extension if not exists "uuid-ossp";
 
 -- ─── PROFILES ───────────────────────────────────────────────
@@ -30,7 +29,6 @@ create policy "Users can update own profile"
 create policy "Users can insert own profile"
   on public.profiles for insert with check (auth.uid() = id);
 
--- Auto-create profile on signup
 create or replace function public.handle_new_user()
 returns trigger as $$
 begin
@@ -63,13 +61,7 @@ create table if not exists public.chats (
 
 alter table public.chats enable row level security;
 
-create policy "Chat members can view chats"
-  on public.chats for select using (
-    exists (
-      select 1 from public.chat_members
-      where chat_id = chats.id and user_id = auth.uid()
-    )
-  );
+-- NOTE: policy referencing chat_members added AFTER that table is created below
 
 create policy "Authenticated users can create chats"
   on public.chats for insert with check (auth.uid() is not null);
@@ -100,6 +92,15 @@ create policy "Users can join chats"
 
 create policy "Users can update own membership"
   on public.chat_members for update using (user_id = auth.uid());
+
+-- Now safe to add chats select policy (chat_members exists)
+create policy "Chat members can view chats"
+  on public.chats for select using (
+    exists (
+      select 1 from public.chat_members
+      where chat_id = chats.id and user_id = auth.uid()
+    )
+  );
 
 -- ─── MESSAGES ───────────────────────────────────────────────
 create table if not exists public.messages (
@@ -192,7 +193,6 @@ create policy "Users can manage own folder_chats"
   );
 
 -- ─── REALTIME ───────────────────────────────────────────────
--- Enable realtime for messages and reactions
 alter publication supabase_realtime add table public.messages;
 alter publication supabase_realtime add table public.reactions;
 alter publication supabase_realtime add table public.profiles;

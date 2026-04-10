@@ -139,7 +139,7 @@ export function MessageInput({ chatId, replyTo, onCancelReply, onSend }: Message
             <Reply size={13} style={{ color: "var(--tg-accent)", flexShrink: 0 }} />
             <div className="flex-1 min-w-0">
               <div className="text-xs font-semibold" style={{ color: "var(--tg-accent)" }}>
-                {replyTo.user_id === "me" ? "You" : replyTo.sender?.full_name ?? "Unknown"}
+                {replyTo.sender?.full_name ?? "You"}
               </div>
               <div className="text-xs truncate" style={{ color: "var(--tg-text-secondary)" }}>
                 {replyTo.content}
