@@ -34,6 +34,13 @@ interface AppState {
   // Reply/forward state
   replyToMessage: MessageWithSender | null
   setReplyToMessage: (msg: MessageWithSender | null) => void
+
+  // Mute
+  mutedChatIds: string[]
+  toggleMutedChat: (chatId: string) => void
+
+  // Mark chat read (zero out unread_count in store)
+  markChatRead: (chatId: string) => void
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -80,4 +87,21 @@ export const useAppStore = create<AppState>((set) => ({
 
   replyToMessage: null,
   setReplyToMessage: (msg) => set({ replyToMessage: msg }),
+
+  mutedChatIds: typeof window !== 'undefined'
+    ? JSON.parse(localStorage.getItem('ng_muted') ?? '[]')
+    : [],
+  toggleMutedChat: (chatId) =>
+    set((state) => {
+      const next = state.mutedChatIds.includes(chatId)
+        ? state.mutedChatIds.filter((id) => id !== chatId)
+        : [...state.mutedChatIds, chatId];
+      if (typeof window !== 'undefined') localStorage.setItem('ng_muted', JSON.stringify(next));
+      return { mutedChatIds: next };
+    }),
+
+  markChatRead: (chatId) =>
+    set((state) => ({
+      chats: state.chats.map((c) => c.id === chatId ? { ...c, unread_count: 0 } : c),
+    })),
 }))

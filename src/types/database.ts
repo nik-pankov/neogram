@@ -43,6 +43,7 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
+        Relationships: []
       }
       chats: {
         Row: {
@@ -74,6 +75,7 @@ export interface Database {
           created_by?: string | null
           updated_at?: string
         }
+        Relationships: []
       }
       chat_members: {
         Row: {
@@ -94,6 +96,22 @@ export interface Database {
           role?: 'owner' | 'admin' | 'member'
           last_read_at?: string | null
         }
+        Relationships: [
+          {
+            foreignKeyName: "chat_members_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "chats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       messages: {
         Row: {
@@ -130,6 +148,29 @@ export interface Database {
           deleted_at?: string | null
           pinned?: boolean
         }
+        Relationships: [
+          {
+            foreignKeyName: "messages_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "chats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_reply_to_id_fkey"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       reactions: {
         Row: {
@@ -149,6 +190,22 @@ export interface Database {
         Update: {
           emoji?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "reactions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       folders: {
         Row: {
@@ -172,6 +229,7 @@ export interface Database {
           emoji?: string | null
           position?: number
         }
+        Relationships: []
       }
       folder_chats: {
         Row: {
@@ -183,11 +241,13 @@ export interface Database {
           chat_id: string
         }
         Update: Record<string, never>
+        Relationships: []
       }
     }
     Views: Record<string, never>
     Functions: Record<string, never>
     Enums: Record<string, never>
+    CompositeTypes: Record<string, never>
   }
 }
 
@@ -204,6 +264,7 @@ export interface ChatWithLastMessage extends Chat {
   unread_count?: number
   members?: (ChatMember & { profile: Profile })[]
   other_user?: Profile  // for private chats
+  is_muted?: boolean
 }
 
 export interface MessageWithSender extends Message {

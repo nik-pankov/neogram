@@ -168,3 +168,487 @@ Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
 ✓ Compiled in 17ms
 ✓ Compiled in 45ms
  GET /icons/icon-192.png 404 in 68ms (next.js: 17ms, application-code: 51ms)
+ GET / 200 in 606ms (next.js: 19ms, proxy.ts: 481ms, application-code: 106ms)
+ GET /icons/icon-192.png 404 in 26ms (next.js: 4ms, application-code: 22ms)
+[browser] Uncaught Error: cannot add `postgres_changes` callbacks for realtime:chats-realtime after `subscribe()`.
+    at useChats.useEffect (src/hooks/useChats.ts:119:8)
+    at Sidebar (src/components/sidebar/Sidebar.tsx:74:9)
+    at MainLayout (src/components/layout/MainLayout.tsx:35:11)
+    at Home (src/app/page.tsx:4:10)
+  117 |     const channel = supabase
+  118 |       .channel("chats-realtime")
+> 119 |       .on(
+      |        ^
+  120 |         "postgres_changes",
+  121 |         { event: "INSERT", schema: "public", table: "messages" },
+  122 |         () => fetchChats()
+ GET / 200 in 953ms (next.js: 4ms, proxy.ts: 912ms, application-code: 36ms)
+ GET /icons/icon-192.png 404 in 26ms (next.js: 3ms, application-code: 23ms)
+[browser] Uncaught Error: cannot add `postgres_changes` callbacks for realtime:chats-realtime after `subscribe()`.
+    at useChats.useEffect (src/hooks/useChats.ts:119:8)
+    at Sidebar (src/components/sidebar/Sidebar.tsx:74:9)
+    at MainLayout (src/components/layout/MainLayout.tsx:35:11)
+    at Home (src/app/page.tsx:4:10)
+  117 |     const channel = supabase
+  118 |       .channel("chats-realtime")
+> 119 |       .on(
+      |        ^
+  120 |         "postgres_changes",
+  121 |         { event: "INSERT", schema: "public", table: "messages" },
+  122 |         () => fetchChats()
+ GET /? 200 in 2.1s (next.js: 7ms, proxy.ts: 2.1s, application-code: 42ms)
+ GET /icons/icon-192.png 404 in 28ms (next.js: 8ms, application-code: 21ms)
+ GET / 200 in 1012ms (next.js: 11ms, proxy.ts: 948ms, application-code: 54ms)
+ GET /icons/icon-192.png 404 in 27ms (next.js: 5ms, application-code: 22ms)
+✓ Compiled in 163ms
+ GET / 200 in 429ms (next.js: 63ms, proxy.ts: 339ms, application-code: 27ms)
+ GET / 200 in 228ms (next.js: 3ms, proxy.ts: 212ms, application-code: 12ms)
+ GET / 200 in 644ms (next.js: 2ms, proxy.ts: 633ms, application-code: 9ms)
+ GET /icons/icon-192.png 404 in 68ms (next.js: 11ms, application-code: 58ms)
+ GET / 200 in 205ms (next.js: 1535µs, proxy.ts: 193ms, application-code: 10ms)
+✓ Compiled in 21ms
+✓ Compiled in 37ms
+✓ Compiled in 20ms
+✓ Compiled in 38ms
+✓ Compiled in 20ms
+ GET / 200 in 1010ms (next.js: 36ms, proxy.ts: 715ms, application-code: 259ms)
+ GET /icons/icon-192.png 404 in 431ms (next.js: 9ms, application-code: 422ms)
+[browser] openPrivateChat error: {"code":"42P17","details":null,"hint":null,"message":"infinite recursion detected in policy for relation \"chat_members\""} 
+    at useCreateChat.useCallback[openPrivateChat] (src/hooks/useCreateChat.ts:84:17)
+    at async handleSelect (src/components/sidebar/NewChatModal.tsx:32:20)
+  82 |       } catch (err: unknown) {
+  83 |         const msg = err instanceof Error ? err.message : JSON.stringify(err);
+> 84 |         console.error("openPrivateChat error:", msg);
+     |                 ^
+  85 |         setError(msg);
+  86 |         setLoading(false);
+  87 |         return null; (src/hooks/useCreateChat.ts:84:17)
+[browser] openPrivateChat error: {"code":"42P17","details":null,"hint":null,"message":"infinite recursion detected in policy for relation \"chat_members\""} 
+    at useCreateChat.useCallback[openPrivateChat] (src/hooks/useCreateChat.ts:84:17)
+    at async handleSelect (src/components/sidebar/NewChatModal.tsx:32:20)
+  82 |       } catch (err: unknown) {
+  83 |         const msg = err instanceof Error ? err.message : JSON.stringify(err);
+> 84 |         console.error("openPrivateChat error:", msg);
+     |                 ^
+  85 |         setError(msg);
+  86 |         setLoading(false);
+  87 |         return null; (src/hooks/useCreateChat.ts:84:17)
+ GET / 200 in 848ms (next.js: 12ms, proxy.ts: 800ms, application-code: 36ms)
+ GET /icons/icon-192.png 404 in 28ms (next.js: 4ms, application-code: 24ms)
+[browser] openPrivateChat error: {"code":"42P17","details":null,"hint":null,"message":"infinite recursion detected in policy for relation \"chat_members\""} 
+    at useCreateChat.useCallback[openPrivateChat] (src/hooks/useCreateChat.ts:84:17)
+    at async handleSelect (src/components/sidebar/NewChatModal.tsx:32:20)
+  82 |       } catch (err: unknown) {
+  83 |         const msg = err instanceof Error ? err.message : JSON.stringify(err);
+> 84 |         console.error("openPrivateChat error:", msg);
+     |                 ^
+  85 |         setError(msg);
+  86 |         setLoading(false);
+  87 |         return null; (src/hooks/useCreateChat.ts:84:17)
+ GET / 200 in 1369ms (next.js: 11ms, proxy.ts: 1317ms, application-code: 41ms)
+ GET /icons/icon-192.png 404 in 26ms (next.js: 4ms, application-code: 22ms)
+[browser] openPrivateChat error: {"code":"42501","details":null,"hint":null,"message":"new row violates row-level security policy for table \"chats\""} 
+    at useCreateChat.useCallback[openPrivateChat] (src/hooks/useCreateChat.ts:84:17)
+    at async handleSelect (src/components/sidebar/NewChatModal.tsx:32:20)
+  82 |       } catch (err: unknown) {
+  83 |         const msg = err instanceof Error ? err.message : JSON.stringify(err);
+> 84 |         console.error("openPrivateChat error:", msg);
+     |                 ^
+  85 |         setError(msg);
+  86 |         setLoading(false);
+  87 |         return null; (src/hooks/useCreateChat.ts:84:17)
+ GET / 200 in 1836ms (next.js: 3ms, proxy.ts: 1797ms, application-code: 36ms)
+ GET /icons/icon-192.png 404 in 23ms (next.js: 4ms, application-code: 20ms)
+[browser] openPrivateChat error: {"code":"42501","details":null,"hint":null,"message":"new row violates row-level security policy for table \"chats\""} 
+    at useCreateChat.useCallback[openPrivateChat] (src/hooks/useCreateChat.ts:84:17)
+    at async handleSelect (src/components/sidebar/NewChatModal.tsx:32:20)
+  82 |       } catch (err: unknown) {
+  83 |         const msg = err instanceof Error ? err.message : JSON.stringify(err);
+> 84 |         console.error("openPrivateChat error:", msg);
+     |                 ^
+  85 |         setError(msg);
+  86 |         setLoading(false);
+  87 |         return null; (src/hooks/useCreateChat.ts:84:17)
+ GET / 200 in 547ms (next.js: 6ms, proxy.ts: 503ms, application-code: 38ms)
+ GET /icons/icon-192.png 404 in 38ms (next.js: 3ms, application-code: 35ms)
+ GET / 200 in 2.7s (next.js: 3ms, proxy.ts: 2.7s, application-code: 32ms)
+ GET /icons/icon-192.png 404 in 23ms (next.js: 2ms, application-code: 21ms)
+ GET / 200 in 601ms (next.js: 8ms, proxy.ts: 556ms, application-code: 37ms)
+ GET /icons/icon-192.png 404 in 25ms (next.js: 6ms, application-code: 19ms)
+✓ Compiled in 24ms
+✓ Compiled in 16ms
+✓ Compiled in 16ms
+✓ Compiled in 60ms
+✓ Compiled in 39ms
+✓ Compiled in 56ms
+ GET / 200 in 1871ms (next.js: 13ms, proxy.ts: 1822ms, application-code: 36ms)
+ GET / 200 in 2.2s (next.js: 6ms, proxy.ts: 2.2s, application-code: 34ms)
+ GET /icons/icon-192.png 404 in 25ms (next.js: 4ms, application-code: 22ms)
+✓ Compiled in 23ms
+✓ Compiled in 65ms
+✓ Compiled in 18ms
+✓ Compiled in 15ms
+✓ Compiled in 55ms
+✓ Compiled in 16ms
+ GET / 200 in 785ms (next.js: 9ms, proxy.ts: 743ms, application-code: 33ms)
+ GET /icons/icon-192.png 404 in 25ms (next.js: 4ms, application-code: 21ms)
+ GET / 200 in 944ms (next.js: 7ms, proxy.ts: 898ms, application-code: 39ms)
+✓ Compiled in 20ms
+✓ Compiled in 158ms
+✓ Compiled in 41ms
+✓ Compiled in 61ms
+[browser] ./src/components/chat/MessageBubble.tsx:198:11
+Expected '</', got '{'
+  196 |           )}
+  197 |
+> 198 |           {/* Bubble */}
+      |           ^
+  199 |           <div
+  200 |             className={cn(
+  201 |               "relative px-3 py-2 rounded-2xl",
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/components/chat/MessageBubble.tsx [Client Component Browser]
+    ./src/components/chat/MessageList.tsx [Client Component Browser]
+    ./src/components/chat/ChatWindow.tsx [Client Component Browser]
+    ./src/components/layout/MainLayout.tsx [Client Component Browser]
+    ./src/components/layout/MainLayout.tsx [Server Component]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/chat/MessageBubble.tsx [Client Component SSR]
+    ./src/components/chat/MessageList.tsx [Client Component SSR]
+    ./src/components/chat/ChatWindow.tsx [Client Component SSR]
+    ./src/components/layout/MainLayout.tsx [Client Component SSR]
+    ./src/components/layout/MainLayout.tsx [Server Component]
+    ./src/app/page.tsx [Server Component] 
+[browser] ./src/components/chat/MessageBubble.tsx:198:11
+Expected '</', got '{'
+  196 |           )}
+  197 |
+> 198 |           {/* Bubble */}
+      |           ^
+  199 |           <div
+  200 |             className={cn(
+  201 |               "relative px-3 py-2 rounded-2xl",
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/components/chat/MessageBubble.tsx [Client Component Browser]
+    ./src/components/chat/MessageList.tsx [Client Component Browser]
+    ./src/components/chat/ChatWindow.tsx [Client Component Browser]
+    ./src/components/layout/MainLayout.tsx [Client Component Browser]
+    ./src/components/layout/MainLayout.tsx [Server Component]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/chat/MessageBubble.tsx [Client Component SSR]
+    ./src/components/chat/MessageList.tsx [Client Component SSR]
+    ./src/components/chat/ChatWindow.tsx [Client Component SSR]
+    ./src/components/layout/MainLayout.tsx [Client Component SSR]
+    ./src/components/layout/MainLayout.tsx [Server Component]
+    ./src/app/page.tsx [Server Component] 
+[browser] ./src/components/chat/MessageBubble.tsx:198:11
+Expected '</', got '{'
+  196 |           )}
+  197 |
+> 198 |           {/* Bubble */}
+      |           ^
+  199 |           <div
+  200 |             className={cn(
+  201 |               "relative px-3 py-2 rounded-2xl",
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/components/chat/MessageBubble.tsx [Client Component Browser]
+    ./src/components/chat/MessageList.tsx [Client Component Browser]
+    ./src/components/chat/ChatWindow.tsx [Client Component Browser]
+    ./src/components/layout/MainLayout.tsx [Client Component Browser]
+    ./src/components/layout/MainLayout.tsx [Server Component]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/chat/MessageBubble.tsx [Client Component SSR]
+    ./src/components/chat/MessageList.tsx [Client Component SSR]
+    ./src/components/chat/ChatWindow.tsx [Client Component SSR]
+    ./src/components/layout/MainLayout.tsx [Client Component SSR]
+    ./src/components/layout/MainLayout.tsx [Server Component]
+    ./src/app/page.tsx [Server Component] 
+[browser] ./src/components/chat/MessageBubble.tsx:198:11
+Expected '</', got '{'
+  196 |           )}
+  197 |
+> 198 |           {/* Bubble */}
+      |           ^
+  199 |           <div
+  200 |             className={cn(
+  201 |               "relative px-3 py-2 rounded-2xl",
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/components/chat/MessageBubble.tsx [Client Component Browser]
+    ./src/components/chat/MessageList.tsx [Client Component Browser]
+    ./src/components/chat/ChatWindow.tsx [Client Component Browser]
+    ./src/components/layout/MainLayout.tsx [Client Component Browser]
+    ./src/components/layout/MainLayout.tsx [Server Component]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/chat/MessageBubble.tsx [Client Component SSR]
+    ./src/components/chat/MessageList.tsx [Client Component SSR]
+    ./src/components/chat/ChatWindow.tsx [Client Component SSR]
+    ./src/components/layout/MainLayout.tsx [Client Component SSR]
+    ./src/components/layout/MainLayout.tsx [Server Component]
+    ./src/app/page.tsx [Server Component] 
+[browser] ./src/components/chat/MessageBubble.tsx:198:11
+Expected '</', got '{'
+  196 |           )}
+  197 |
+> 198 |           {/* Bubble */}
+      |           ^
+  199 |           <div
+  200 |             className={cn(
+  201 |               "relative px-3 py-2 rounded-2xl",
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/components/chat/MessageBubble.tsx [Client Component Browser]
+    ./src/components/chat/MessageList.tsx [Client Component Browser]
+    ./src/components/chat/ChatWindow.tsx [Client Component Browser]
+    ./src/components/layout/MainLayout.tsx [Client Component Browser]
+    ./src/components/layout/MainLayout.tsx [Server Component]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/chat/MessageBubble.tsx [Client Component SSR]
+    ./src/components/chat/MessageList.tsx [Client Component SSR]
+    ./src/components/chat/ChatWindow.tsx [Client Component SSR]
+    ./src/components/layout/MainLayout.tsx [Client Component SSR]
+    ./src/components/layout/MainLayout.tsx [Server Component]
+    ./src/app/page.tsx [Server Component] 
+[browser] ./src/components/chat/MessageBubble.tsx:198:11
+Expected '</', got '{'
+  196 |           )}
+  197 |
+> 198 |           {/* Bubble */}
+      |           ^
+  199 |           <div
+  200 |             className={cn(
+  201 |               "relative px-3 py-2 rounded-2xl",
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/components/chat/MessageBubble.tsx [Client Component Browser]
+    ./src/components/chat/MessageList.tsx [Client Component Browser]
+    ./src/components/chat/ChatWindow.tsx [Client Component Browser]
+    ./src/components/layout/MainLayout.tsx [Client Component Browser]
+    ./src/components/layout/MainLayout.tsx [Server Component]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/chat/MessageBubble.tsx [Client Component SSR]
+    ./src/components/chat/MessageList.tsx [Client Component SSR]
+    ./src/components/chat/ChatWindow.tsx [Client Component SSR]
+    ./src/components/layout/MainLayout.tsx [Client Component SSR]
+    ./src/components/layout/MainLayout.tsx [Server Component]
+    ./src/app/page.tsx [Server Component] 
+✓ Compiled in 22ms
+ GET / 200 in 2.4s (next.js: 14ms, proxy.ts: 2.3s, application-code: 39ms)
+ GET / 200 in 2.4s (next.js: 1858µs, proxy.ts: 2.3s, application-code: 16ms)
+ GET /icons/icon-192.png 404 in 24ms (next.js: 3ms, application-code: 21ms)
+✓ Compiled in 14ms
+✓ Compiled in 16ms
+✓ Compiled in 17ms
+[browser] ⨯ unhandledRejection: AbortError: The play() request was interrupted by a call to pause(). https://goo.gl/LdLk22
+
+[browser] ⨯ unhandledRejection: NotSupportedError: Failed to load because no supported source was found.
+
+[browser] ⨯ unhandledRejection: NotSupportedError: The element has no supported sources.
+
+[browser] ⨯ unhandledRejection: NotSupportedError: The media resource indicated by the src attribute or assigned media provider object was not suitable.
+    at toggle (src/components/chat/AudioMessage.tsx:22:18)
+  20 |     if (!audio) return;
+  21 |     if (playing) { audio.pause(); setPlaying(false); }
+> 22 |     else { audio.play(); setPlaying(true); }
+     |                  ^
+  23 |   };
+  24 |
+  25 |   const handleTimeUpdate = () => {
+Error: Both middleware file "./src/middleware.ts" and proxy file "./src/proxy.ts" are detected. Please use "./src/proxy.ts" only. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+    at ignore-listed frames
+⨯ unhandledRejection: Error: Both middleware file "./src/middleware.ts" and proxy file "./src/proxy.ts" are detected. Please use "./src/proxy.ts" only. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+    at ignore-listed frames
+⨯ unhandledRejection:  Error: Both middleware file "./src/middleware.ts" and proxy file "./src/proxy.ts" are detected. Please use "./src/proxy.ts" only. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+    at ignore-listed frames
+✓ Compiled in 347ms
+[browser] ./src/middleware.ts:1:31
+Next.js can't recognize the exported `config` field in route. It mustn't be reexported.
+> 1 | export { proxy as middleware, config } from './proxy'
+    |                               ^^^^^^
+  2 |
+
+The exported configuration object in a source file needs to have a very specific format from which some properties can be statically parsed at compiled-time.
+
+https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config 
+[browser] ./src/middleware.ts:1:31
+Next.js can't recognize the exported `config` field in route. It mustn't be reexported.
+> 1 | export { proxy as middleware, config } from './proxy'
+    |                               ^^^^^^
+  2 |
+
+The exported configuration object in a source file needs to have a very specific format from which some properties can be statically parsed at compiled-time.
+
+https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config 
+ GET / 500 in 799ms (next.js: 90ms, proxy.ts: 499ms, application-code: 210ms)
+ GET / 500 in 209ms (next.js: 5ms, proxy.ts: 195ms, application-code: 9ms)
+ GET / 500 in 1115ms (next.js: 4ms, proxy.ts: 1100ms, application-code: 11ms)
+ GET / 500 in 181ms (next.js: 23ms, proxy.ts: 150ms, application-code: 7ms)
+ GET / 500 in 494ms (next.js: 4ms, proxy.ts: 482ms, application-code: 8ms)
+ GET / 500 in 613ms (next.js: 4ms, proxy.ts: 598ms, application-code: 12ms)
+ GET / 500 in 153ms (next.js: 10ms, proxy.ts: 132ms, application-code: 10ms)
+[browser] Uncaught Error: ./src/middleware.ts:1:31
+Next.js can't recognize the exported `config` field in route. It mustn't be reexported.
+> 1 | export { proxy as middleware, config } from './proxy'
+    |                               ^^^^^^
+  2 |
+
+The exported configuration object in a source file needs to have a very specific format from which some properties can be statically parsed at compiled-time.
+
+https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config
+
+
+    at <unknown> (Error: ./src/middleware.ts:1:31)
+    at <unknown> (https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config)
+    at <unknown> (Error: (./src/middleware.ts:1:31)
+    at <unknown> (https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config)
+ GET / 500 in 259ms (next.js: 21ms, proxy.ts: 214ms, application-code: 24ms)
+ GET / 500 in 1292ms (next.js: 27ms, proxy.ts: 1245ms, application-code: 20ms)
+[browser] Uncaught Error: ./src/middleware.ts:1:31
+Next.js can't recognize the exported `config` field in route. It mustn't be reexported.
+> 1 | export { proxy as middleware, config } from './proxy'
+    |                               ^^^^^^
+  2 |
+
+The exported configuration object in a source file needs to have a very specific format from which some properties can be statically parsed at compiled-time.
+
+https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config
+
+
+    at <unknown> (Error: ./src/middleware.ts:1:31)
+    at <unknown> (https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config)
+    at <unknown> (Error: (./src/middleware.ts:1:31)
+    at <unknown> (https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config)
+[browser] ./src/middleware.ts:1:31
+Next.js can't recognize the exported `config` field in route. It mustn't be reexported.
+> 1 | export { proxy as middleware, config } from './proxy'
+    |                               ^^^^^^
+  2 |
+
+The exported configuration object in a source file needs to have a very specific format from which some properties can be statically parsed at compiled-time.
+
+https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config 
+[browser] ./src/middleware.ts:1:31
+Next.js can't recognize the exported `config` field in route. It mustn't be reexported.
+> 1 | export { proxy as middleware, config } from './proxy'
+    |                               ^^^^^^
+  2 |
+
+The exported configuration object in a source file needs to have a very specific format from which some properties can be statically parsed at compiled-time.
+
+https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config 
+⨯ Error: Could not parse module '[project]/src/middleware.ts', file not found
+    at module evaluation (.next/dev/server/edge/chunks/[root-of-the-server]__0f~z-z3._.js:68:11)
+    at module evaluation (.next/dev/server/edge/chunks/[root-of-the-server]__0f~z-z3._.js:81:167)
+⨯ Error: Could not parse module '[project]/src/middleware.ts', file not found
+    at module evaluation (.next/dev/server/edge/chunks/[root-of-the-server]__0f~z-z3._.js:68:11)
+    at module evaluation (.next/dev/server/edge/chunks/[root-of-the-server]__0f~z-z3._.js:81:167)
+⨯ Error: Could not parse module '[project]/src/middleware.ts', file not found
+    at module evaluation (.next/dev/server/edge/chunks/[root-of-the-server]__0f~z-z3._.js:68:11)
+    at module evaluation (.next/dev/server/edge/chunks/[root-of-the-server]__0f~z-z3._.js:81:167)
+⨯ Error: Could not parse module '[project]/src/middleware.ts', file not found
+    at module evaluation (.next/dev/server/edge/chunks/[root-of-the-server]__0f~z-z3._.js:68:11)
+    at module evaluation (.next/dev/server/edge/chunks/[root-of-the-server]__0f~z-z3._.js:81:167)
+ GET / 404 in 1869ms (next.js: -4958µs, proxy.ts: 1797ms, application-code: 77ms)
+ GET / 404 in 1567ms (next.js: -29296µs, proxy.ts: 748ms, application-code: 848ms)
+[browser] Uncaught Error: Could not parse module '[project]/src/middleware.ts', file not found
+    at module evaluation (src/proxy.ts:48:1)
+    at module evaluation (src/proxy.ts:48:1)
+  46 | export const config = {
+  47 |   matcher: ['/((?!_next/static|_next/image|favicon.ico|icons|sw.js|manifest.json).*)'],
+> 48 | }
+     | ^
+  49 |
+[browser] Uncaught Error: Could not parse module '[project]/src/middleware.ts', file not found
+    at module evaluation (src/proxy.ts:48:1)
+    at module evaluation (src/proxy.ts:48:1)
+  46 | export const config = {
+  47 |   matcher: ['/((?!_next/static|_next/image|favicon.ico|icons|sw.js|manifest.json).*)'],
+> 48 | }
+     | ^
+  49 |
+
+<--- Last few GCs --->
+
+[31916:0x118008000] 69784029 ms: Scavenge (reduce) 8085.0 (8238.2) -> 8084.6 (8238.5) MB, 16.42 / 0.00 ms  (average mu = 0.355, current mu = 0.453) allocation failure; 
+[31916:0x118008000] 69784051 ms: Scavenge (reduce) 8085.6 (8238.7) -> 8085.1 (8239.0) MB, 17.12 / 0.00 ms  (average mu = 0.355, current mu = 0.453) allocation failure; 
+[31916:0x118008000] 69789528 ms: Scavenge (reduce) 8085.8 (8239.0) -> 8085.3 (8239.2) MB, 5474.46 / 0.00 ms  (average mu = 0.355, current mu = 0.453) allocation failure; 
+
+
+<--- JS stacktrace --->
+
+FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory
+----- Native stack trace -----
+
+ 1: 0x100b841b4 node::OOMErrorHandler(char const*, v8::OOMDetails const&) [/Users/nekit/.nvm/versions/node/v20.20.2/bin/node]
+ 2: 0x100d32ee0 v8::internal::V8::FatalProcessOutOfMemory(v8::internal::Isolate*, char const*, v8::OOMDetails const&) [/Users/nekit/.nvm/versions/node/v20.20.2/bin/node]
+ 3: 0x100f40904 v8::internal::Heap::GarbageCollectionReasonToString(v8::internal::GarbageCollectionReason) [/Users/nekit/.nvm/versions/node/v20.20.2/bin/node]
+ 4: 0x100f44400 v8::internal::Heap::CollectGarbageShared(v8::internal::LocalHeap*, v8::internal::GarbageCollectionReason) [/Users/nekit/.nvm/versions/node/v20.20.2/bin/node]
+ 5: 0x100f4127c v8::internal::Heap::PerformGarbageCollection(v8::internal::GarbageCollector, v8::internal::GarbageCollectionReason, char const*) [/Users/nekit/.nvm/versions/node/v20.20.2/bin/node]
+ 6: 0x100f3edf8 v8::internal::Heap::CollectGarbage(v8::internal::AllocationSpace, v8::internal::GarbageCollectionReason, v8::GCCallbackFlags) [/Users/nekit/.nvm/versions/node/v20.20.2/bin/node]
+ 7: 0x100f35108 v8::internal::HeapAllocator::AllocateRawWithLightRetrySlowPath(int, v8::internal::AllocationType, v8::internal::AllocationOrigin, v8::internal::AllocationAlignment) [/Users/nekit/.nvm/versions/node/v20.20.2/bin/node]
+ 8: 0x100f35960 v8::internal::HeapAllocator::AllocateRawWithRetryOrFailSlowPath(int, v8::internal::AllocationType, v8::internal::AllocationOrigin, v8::internal::AllocationAlignment) [/Users/nekit/.nvm/versions/node/v20.20.2/bin/node]
+ 9: 0x100f19e0c v8::internal::Factory::NewFillerObject(int, v8::internal::AllocationAlignment, v8::internal::AllocationType, v8::internal::AllocationOrigin) [/Users/nekit/.nvm/versions/node/v20.20.2/bin/node]
+10: 0x1013280d0 v8::internal::Runtime_AllocateInYoungGeneration(int, unsigned long*, v8::internal::Isolate*) [/Users/nekit/.nvm/versions/node/v20.20.2/bin/node]
+11: 0x1016bcfe4 Builtins_CEntry_Return1_ArgvOnStack_NoBuiltinExit [/Users/nekit/.nvm/versions/node/v20.20.2/bin/node]
+12: 0x10174b5f8 Builtins_WeakRefConstructor [/Users/nekit/.nvm/versions/node/v20.20.2/bin/node]
+13: 0x1016318fc Builtins_JSBuiltinsConstructStub [/Users/nekit/.nvm/versions/node/v20.20.2/bin/node]
+14: 0x106525014 
+15: 0x106d6a984 
+16: 0x101717c7c Builtins_PromiseConstructor [/Users/nekit/.nvm/versions/node/v20.20.2/bin/node]
+17: 0x1016318fc Builtins_JSBuiltinsConstructStub [/Users/nekit/.nvm/versions/node/v20.20.2/bin/node]
+18: 0x106970b74 
+19: 0x1016b9be4 Builtins_AsyncGeneratorResumeNext [/Users/nekit/.nvm/versions/node/v20.20.2/bin/node]
+20: 0x1016b9f20 Builtins_AsyncGeneratorPrototypeNext [/Users/nekit/.nvm/versions/node/v20.20.2/bin/node]
+21: 0x106ca5a28 
+22: 0x10166b450 Builtins_AsyncFunctionAwaitResolveClosure [/Users/nekit/.nvm/versions/node/v20.20.2/bin/node]
+23: 0x101719b18 Builtins_PromiseFulfillReactionJob [/Users/nekit/.nvm/versions/node/v20.20.2/bin/node]
+24: 0x10165ad14 Builtins_RunMicrotasks [/Users/nekit/.nvm/versions/node/v20.20.2/bin/node]
+25: 0x1016323f4 Builtins_JSRunMicrotasksEntry [/Users/nekit/.nvm/versions/node/v20.20.2/bin/node]
+26: 0x100eab274 v8::internal::(anonymous namespace)::Invoke(v8::internal::Isolate*, v8::internal::(anonymous namespace)::InvokeParams const&) [/Users/nekit/.nvm/versions/node/v20.20.2/bin/node]
+27: 0x100eabba0 v8::internal::(anonymous namespace)::InvokeWithTryCatch(v8::internal::Isolate*, v8::internal::(anonymous namespace)::InvokeParams const&) [/Users/nekit/.nvm/versions/node/v20.20.2/bin/node]
+28: 0x100eabd8c v8::internal::Execution::TryRunMicrotasks(v8::internal::Isolate*, v8::internal::MicrotaskQueue*) [/Users/nekit/.nvm/versions/node/v20.20.2/bin/node]
+29: 0x100ed6ac4 v8::internal::MicrotaskQueue::RunMicrotasks(v8::internal::Isolate*) [/Users/nekit/.nvm/versions/node/v20.20.2/bin/node]
+30: 0x100ed7250 v8::internal::MicrotaskQueue::PerformCheckpoint(v8::Isolate*) [/Users/nekit/.nvm/versions/node/v20.20.2/bin/node]
+31: 0x100a98c84 node::InternalCallbackScope::Close() [/Users/nekit/.nvm/versions/node/v20.20.2/bin/node]
+32: 0x100a98824 node::CallbackScope::~CallbackScope() [/Users/nekit/.nvm/versions/node/v20.20.2/bin/node]
+33: 0x100b4c068 v8impl::(anonymous namespace)::ThreadSafeFunction::AsyncCb(uv_async_s*) [/Users/nekit/.nvm/versions/node/v20.20.2/bin/node]
+34: 0x1016112c8 uv__async_io [/Users/nekit/.nvm/versions/node/v20.20.2/bin/node]
+35: 0x101623f70 uv__io_poll [/Users/nekit/.nvm/versions/node/v20.20.2/bin/node]
+36: 0x101611830 uv_run [/Users/nekit/.nvm/versions/node/v20.20.2/bin/node]
+37: 0x100a997e8 node::SpinEventLoopInternal(node::Environment*) [/Users/nekit/.nvm/versions/node/v20.20.2/bin/node]
+38: 0x100bc8b90 node::NodeMainInstance::Run() [/Users/nekit/.nvm/versions/node/v20.20.2/bin/node]
+39: 0x100b450f8 node::Start(int, char**) [/Users/nekit/.nvm/versions/node/v20.20.2/bin/node]
+40: 0x198086b98 start [/usr/lib/dyld]

@@ -10,11 +10,13 @@ interface ChatHeaderProps {
   chatId: string;
   chat?: ChatWithLastMessage;
   onSearchOpen?: () => void;
+  onInfoOpen?: () => void;
 }
 
-export function ChatHeader({ chatId, chat, onSearchOpen }: ChatHeaderProps) {
-  const { setSelectedChatId } = useAppStore();
+export function ChatHeader({ chatId, chat, onSearchOpen, onInfoOpen }: ChatHeaderProps) {
+  const { setSelectedChatId, mutedChatIds, toggleMutedChat } = useAppStore();
   const [showMenu, setShowMenu] = useState(false);
+  const isMuted = mutedChatIds.includes(chatId);
 
   const name = chat?.name ?? "Chat";
   const type = chat?.type ?? "private";
@@ -42,7 +44,7 @@ export function ChatHeader({ chatId, chat, onSearchOpen }: ChatHeaderProps) {
 
   const menuItems = [
     { icon: Search, label: "Search in chat", action: () => { setShowMenu(false); onSearchOpen?.(); } },
-    { icon: Bell, label: "Mute notifications", action: () => setShowMenu(false) },
+    { icon: Bell, label: isMuted ? "Unmute notifications" : "Mute notifications", action: () => { toggleMutedChat(chatId); setShowMenu(false); } },
     { icon: Trash2, label: "Clear history", danger: true, action: () => setShowMenu(false) },
     { icon: UserX, label: "Delete chat", danger: true, action: () => setShowMenu(false) },
   ];
@@ -64,7 +66,7 @@ export function ChatHeader({ chatId, chat, onSearchOpen }: ChatHeaderProps) {
         <ArrowLeft size={20} />
       </button>
 
-      <button className="flex items-center gap-2.5 flex-1 min-w-0 rounded-lg px-1 py-1 hover:bg-white/5 transition-colors">
+      <button onClick={onInfoOpen} className="flex items-center gap-2.5 flex-1 min-w-0 rounded-lg px-1 py-1 hover:bg-white/5 transition-colors">
         <ChatAvatar
           chat={{ id: chatId, name, avatar_url: chat?.avatar_url ?? null, type }}
           size="sm"

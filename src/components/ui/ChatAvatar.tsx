@@ -28,7 +28,7 @@ function getInitials(name: string): string {
 
 interface ChatAvatarProps {
   chat: Pick<ChatWithLastMessage, "id" | "name" | "avatar_url" | "type">;
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "xl";
   className?: string;
   showOnline?: boolean;
 }
@@ -37,12 +37,14 @@ const sizeMap = {
   sm: "w-8 h-8 text-xs",
   md: "w-12 h-12 text-sm",
   lg: "w-16 h-16 text-lg",
+  xl: "w-20 h-20 text-2xl",
 };
 
 const pixelMap = {
   sm: 32,
   md: 48,
   lg: 64,
+  xl: 80,
 };
 
 export function ChatAvatar({ chat, size = "md", className, showOnline }: ChatAvatarProps) {
@@ -92,7 +94,7 @@ export function UserAvatar({
   showOnline,
 }: {
   user: Pick<Profile, "id" | "full_name" | "avatar_url">;
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "xl";
   className?: string;
   showOnline?: boolean;
 }) {

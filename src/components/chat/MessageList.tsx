@@ -4,7 +4,7 @@ import React, { RefObject, useState, useEffect, useCallback, useRef } from "reac
 import { ChevronDown } from "lucide-react";
 import { MessageBubble } from "./MessageBubble";
 import { TypingIndicator } from "./TypingIndicator";
-import type { MessageWithSender } from "@/types/database";
+import type { ChatMember, MessageWithSender } from "@/types/database";
 import { formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/store/app.store";
@@ -18,6 +18,7 @@ interface MessageListProps {
   typingUser?: string;
   highlightedId?: string | null;
   messageRefs?: React.MutableRefObject<Record<string, HTMLDivElement>>;
+  chatMembers?: (ChatMember & { profile?: unknown })[];
 }
 
 function shouldShowDateSeparator(prev: MessageWithSender | null, current: MessageWithSender): boolean {
@@ -34,9 +35,36 @@ export function MessageList({
   typingUser,
   highlightedId,
   messageRefs,
+  chatMembers,
 }: MessageListProps) {
   const { currentUser } = useAppStore();
+
+  // Compute: latest timestamp that any non-me member has read up to
+  const othersLastReadAt = React.useMemo(() => {
+    if (!chatMembers || !currentUser) return null;
+    const others = chatMembers.filter((m) => m.user_id !== currentUser.id);
+    if (!others.length) return null;
+    // Use the latest last_read_at among all other members
+    const timestamps = others.map((m) => m.last_read_at).filter(Boolean) as string[];
+    if (!timestamps.length) return null;
+    return timestamps.sort().at(-1) ?? null;
+  }, [chatMembers, currentUser]);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Build userId → fullName map and messageId → message map from loaded messages
+  const usersMap = React.useMemo(() => {
+    const map: Record<string, string> = {};
+    messages.forEach((m) => {
+      if (m.user_id && m.sender?.full_name) map[m.user_id] = m.sender.full_name;
+    });
+    return map;
+  }, [messages]);
+
+  const messagesMap = React.useMemo(() => {
+    const map: Record<string, typeof messages[0]> = {};
+    messages.forEach((m) => { map[m.id] = m; });
+    return map;
+  }, [messages]);
   const [showScrollBtn, setShowScrollBtn] = useState(false);
   const [newCount, setNewCount] = useState(0);
   const isAtBottomRef = useRef(true);
@@ -89,6 +117,10 @@ export function MessageList({
           const isSameSenderAsNext = next?.user_id === msg.user_id &&
             !shouldShowDateSeparator(msg, next);
 
+          const isRead = isMe && othersLastReadAt
+            ? othersLastReadAt >= msg.created_at
+            : false;
+
           return (
             <div key={msg.id} ref={(el) => { if (el && messageRefs) messageRefs.current[msg.id] = el; }}
               className={highlightedId === msg.id ? "transition-colors duration-500" : ""}
@@ -115,6 +147,9 @@ export function MessageList({
                 isLastInGroup={!isSameSenderAsNext}
                 onReply={() => onReply(msg)}
                 onReaction={(emoji) => onReaction(msg.id, emoji)}
+                usersMap={usersMap}
+                messagesMap={messagesMap}
+                isRead={isRead}
               />
             </div>
           );

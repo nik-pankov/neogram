@@ -18,7 +18,7 @@ const FOLDERS = [
 
 export function Sidebar() {
   const { selectedChatId, setSelectedChatId, searchQuery } = useAppStore();
-  const { chats, loading } = useChats();
+  const { chats, loading, refetch } = useChats();
   const [activeFolder, setActiveFolder] = useState<string | null>(null);
   const [showNewChat, setShowNewChat] = useState(false);
 
@@ -51,7 +51,7 @@ export function Sidebar() {
 
   return (
     <div className="flex flex-col h-full w-full" style={{ background: "var(--tg-sidebar)" }}>
-      <SidebarHeader onNewChat={() => setShowNewChat(true)} />
+      <SidebarHeader onNewChat={() => setShowNewChat(true)} onRefetch={refetch} />
       <FolderTabs
         folders={foldersWithCounts}
         activeFolder={activeFolder}
@@ -71,7 +71,7 @@ export function Sidebar() {
       )}
 
       {showNewChat && (
-        <NewChatModal onClose={() => setShowNewChat(false)} />
+        <NewChatModal onClose={() => setShowNewChat(false)} onRefetch={refetch} />
       )}
     </div>
   );

@@ -5,6 +5,8 @@ import { Paperclip, Smile, Mic, Send, X, Reply, Image as ImageIcon, FileText, Ca
 import type { MessageWithSender } from "@/types/database";
 import { cn } from "@/lib/utils";
 import { VoiceRecorder } from "./VoiceRecorder";
+import { createClient } from "@/lib/supabase/client";
+import { useAppStore } from "@/store/app.store";
 
 const EMOJI_PANEL = [
   "😀","😂","🥰","😎","🤔","😭","🔥","❤️","👍","👏",
@@ -12,12 +14,6 @@ const EMOJI_PANEL = [
   "😤","🤯","😱","🤩","😴","🥺","😇","🤗","😏","😬",
 ];
 
-const ATTACH_OPTIONS = [
-  { icon: ImageIcon, label: "Photo or Video", color: "#5288c1" },
-  { icon: FileText,  label: "File",           color: "#7c5cbf" },
-  { icon: Camera,    label: "Camera",          color: "#e53e3e" },
-  { icon: MapPin,    label: "Location",        color: "#38a169" },
-];
 
 interface MessageInputProps {
   chatId: string;
@@ -25,15 +21,61 @@ interface MessageInputProps {
   onCancelReply: () => void;
   onSend: (content: string) => void;
   onSendVoice?: (blob: Blob, duration: number) => void;
+  onTyping?: () => void;
 }
 
-export function MessageInput({ chatId, replyTo, onCancelReply, onSend, onSendVoice }: MessageInputProps) {
+export function MessageInput({ chatId, replyTo, onCancelReply, onSend, onSendVoice, onTyping }: MessageInputProps) {
   const [text, setText] = useState("");
   const [showEmoji, setShowEmoji] = useState(false);
   const [showAttach, setShowAttach] = useState(false);
   const [showVoice, setShowVoice] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const photoInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   const hasText = text.trim().length > 0;
+  const supabase = createClient();
+  const { currentUser, addMessage } = useAppStore();
+
+  const uploadAndSend = useCallback(async (file: File) => {
+    if (!currentUser) return;
+    setUploading(true);
+    setShowAttach(false);
+    try {
+      const ext = file.name.split(".").pop() ?? "bin";
+      const path = `${currentUser.id}/${Date.now()}.${ext}`;
+      const { data, error } = await supabase.storage.from("media").upload(path, file);
+      if (error) { console.error("Upload error:", error); return; }
+      const { data: { publicUrl } } = supabase.storage.from("media").getPublicUrl(data.path);
+      const isImage = file.type.startsWith("image/");
+      const isVideo = file.type.startsWith("video/");
+      const type = isImage ? "image" : isVideo ? "video" : "file";
+      const { data: newMsg } = await supabase.from("messages").insert({
+        chat_id: chatId,
+        user_id: currentUser.id,
+        type,
+        media_url: publicUrl,
+        content: file.name,
+      }).select("*, sender:profiles!user_id(*), reactions(*)").single();
+      if (newMsg) addMessage(chatId, newMsg as never);
+      await supabase.from("chats").update({ updated_at: new Date().toISOString() }).eq("id", chatId);
+    } finally {
+      setUploading(false);
+    }
+  }, [chatId, currentUser, supabase, addMessage]);
+
+  const handleLocation = useCallback(() => {
+    setShowAttach(false);
+    if (!navigator.geolocation) { alert("Geolocation not supported"); return; }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        onSend(`📍 Location: https://maps.google.com/?q=${latitude},${longitude}`);
+      },
+      () => alert("Could not get location")
+    );
+  }, [onSend]);
 
   const handleSend = useCallback(() => {
     const trimmed = text.trim();
@@ -48,7 +90,8 @@ export function MessageInput({ chatId, replyTo, onCancelReply, onSend, onSendVoi
   }, [text, onSend]);
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); return; }
+    onTyping?.();
   };
 
   const handleInput = () => {
@@ -93,14 +136,27 @@ export function MessageInput({ chatId, replyTo, onCancelReply, onSend, onSendVoi
         </div>
       )}
 
+      {/* Hidden file inputs */}
+      <input ref={photoInputRef} type="file" accept="image/*,video/*" className="hidden"
+        onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadAndSend(f); e.target.value = ""; }} />
+      <input ref={fileInputRef} type="file" className="hidden"
+        onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadAndSend(f); e.target.value = ""; }} />
+      <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden"
+        onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadAndSend(f); e.target.value = ""; }} />
+
       {/* Attach panel */}
       {showAttach && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setShowAttach(false)} />
           <div className="mx-3 mb-2 rounded-2xl overflow-hidden shadow-xl relative z-20"
             style={{ background: "var(--tg-context-bg)", border: "1px solid rgba(255,255,255,0.08)" }}>
-            {ATTACH_OPTIONS.map(({ icon: Icon, label, color }) => (
-              <button key={label} onClick={() => setShowAttach(false)}
+            {[
+              { icon: ImageIcon, label: "Photo or Video", color: "#5288c1", action: () => photoInputRef.current?.click() },
+              { icon: FileText,  label: "File",           color: "#7c5cbf", action: () => fileInputRef.current?.click() },
+              { icon: Camera,    label: "Camera",          color: "#e53e3e", action: () => cameraInputRef.current?.click() },
+              { icon: MapPin,    label: "Location",        color: "#38a169", action: handleLocation },
+            ].map(({ icon: Icon, label, color, action }) => (
+              <button key={label} onClick={action}
                 className="flex items-center gap-3 w-full px-4 py-3 text-sm transition-colors hover:bg-white/8"
                 style={{ color: "var(--tg-text)" }}>
                 <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
@@ -112,6 +168,12 @@ export function MessageInput({ chatId, replyTo, onCancelReply, onSend, onSendVoi
             ))}
           </div>
         </>
+      )}
+
+      {uploading && (
+        <div className="mx-3 mb-1 text-xs px-3 py-1.5 rounded-xl" style={{ background: "var(--tg-input)", color: "var(--tg-text-secondary)" }}>
+          Uploading...
+        </div>
       )}
 
       <div className="px-3 pb-3 pt-2">

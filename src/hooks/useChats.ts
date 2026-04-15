@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { createClient, getRealtimeClient } from "@/lib/supabase/client";
 import type { ChatWithLastMessage } from "@/types/database";
 import { useAppStore } from "@/store/app.store";
 
@@ -9,11 +9,11 @@ export function useChats() {
   const [loading, setLoading] = useState(true);
   const { chats, setChats, currentUser } = useAppStore();
   const supabase = createClient();
+  const rt = getRealtimeClient();
 
   const fetchChats = useCallback(async () => {
     if (!currentUser) return;
 
-    // Get all chats where user is a member
     const { data: memberships } = await supabase
       .from("chat_members")
       .select("chat_id")
@@ -25,22 +25,14 @@ export function useChats() {
 
     const { data: chatsData } = await supabase
       .from("chats")
-      .select(`
-        *,
-        members:chat_members(
-          user_id, role, last_read_at,
-          profile:profiles(*)
-        )
-      `)
+      .select(`*, members:chat_members(user_id, role, last_read_at, profile:profiles(*))`)
       .in("id", chatIds)
       .order("updated_at", { ascending: false });
 
     if (!chatsData) { setLoading(false); return; }
 
-    // For each chat, get last message + unread count
     const enriched: ChatWithLastMessage[] = await Promise.all(
       chatsData.map(async (chat) => {
-        // Last message
         const { data: lastMsgData } = await supabase
           .from("messages")
           .select("*, sender:profiles(*)")
@@ -50,39 +42,28 @@ export function useChats() {
           .limit(1)
           .single();
 
-        // Unread count
         const myMembership = (chat.members as { user_id: string; last_read_at: string | null }[])
           ?.find((m) => m.user_id === currentUser.id);
         let unreadCount = 0;
         if (myMembership?.last_read_at) {
-          const { count } = await supabase
-            .from("messages")
+          const { count } = await supabase.from("messages")
             .select("id", { count: "exact", head: true })
-            .eq("chat_id", chat.id)
-            .neq("user_id", currentUser.id)
-            .gt("created_at", myMembership.last_read_at)
-            .is("deleted_at", null);
+            .eq("chat_id", chat.id).neq("user_id", currentUser.id)
+            .gt("created_at", myMembership.last_read_at).is("deleted_at", null);
           unreadCount = count ?? 0;
         } else {
-          const { count } = await supabase
-            .from("messages")
+          const { count } = await supabase.from("messages")
             .select("id", { count: "exact", head: true })
-            .eq("chat_id", chat.id)
-            .neq("user_id", currentUser.id)
-            .is("deleted_at", null);
+            .eq("chat_id", chat.id).neq("user_id", currentUser.id).is("deleted_at", null);
           unreadCount = count ?? 0;
         }
 
-        // For private chats, get the other user as display info
         let displayName = chat.name;
         let otherUser = null;
         if (chat.type === "private") {
           const other = (chat.members as { user_id: string; profile: { full_name: string | null } }[])
             ?.find((m) => m.user_id !== currentUser.id);
-          if (other?.profile) {
-            displayName = other.profile.full_name;
-            otherUser = other.profile;
-          }
+          if (other?.profile) { displayName = other.profile.full_name; otherUser = other.profile; }
         }
 
         return {
@@ -95,7 +76,6 @@ export function useChats() {
       })
     );
 
-    // Sort: by last message time desc
     enriched.sort((a, b) => {
       const aTime = a.last_message?.created_at ?? a.updated_at;
       const bTime = b.last_message?.created_at ?? b.updated_at;
@@ -106,25 +86,24 @@ export function useChats() {
     setLoading(false);
   }, [currentUser, supabase, setChats]);
 
-  useEffect(() => {
-    fetchChats();
-  }, [fetchChats]);
+  useEffect(() => { fetchChats(); }, [fetchChats]);
 
-  // Realtime: subscribe to new messages → refresh chat list
+  // Realtime: new messages → refresh chat list (via realtime client, not SSR)
   useEffect(() => {
     if (!currentUser) return;
-
-    const channel = supabase
+    const channel = rt
       .channel("chats-realtime")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "messages" },
-        () => fetchChats()
-      )
-      .subscribe();
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, () => fetchChats())
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "chats" }, () => fetchChats())
+      .subscribe((status: string) => console.log("[chats-realtime]", status));
+    return () => { rt.removeChannel(channel); };
+  }, [currentUser, rt, fetchChats]);
 
-    return () => { supabase.removeChannel(channel); };
-  }, [currentUser, supabase, fetchChats]);
+  // Keep tab title in sync
+  useEffect(() => {
+    const total = chats.reduce((s, c) => s + (c.unread_count ?? 0), 0);
+    document.title = total > 0 ? `(${total}) NeoGram` : "NeoGram";
+  }, [chats]);
 
   return { chats, loading, refetch: fetchChats };
 }

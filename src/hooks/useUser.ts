@@ -13,34 +13,36 @@ export function useUser() {
   const supabase = createClient();
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user);
-      if (user) fetchProfile(user.id);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        // Явно передаём JWT в realtime-клиент (тот же экземпляр),
+        // чтобы WebSocket-соединение проходило аутентификацию.
+        supabase.realtime.setAuth(session.access_token);
+        fetchProfile(session.user.id);
+      }
       setLoading(false);
     });
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
-      if (session?.user) fetchProfile(session.user.id);
-      else setCurrentUser(null);
+      if (session?.user) {
+        supabase.realtime.setAuth(session.access_token);
+        fetchProfile(session.user.id);
+      } else {
+        supabase.realtime.setAuth(null);
+        setCurrentUser(null);
+      }
     });
 
     return () => subscription.unsubscribe();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchProfile = async (userId: string) => {
-    const { data } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", userId)
-      .single();
-
+    const { data } = await supabase.from("profiles").select("*").eq("id", userId).single();
     if (data) {
       setCurrentUser(data as Profile);
     } else {
-      // Create profile if doesn't exist
       const authUser = await supabase.auth.getUser();
       const meta = authUser.data.user?.user_metadata;
       const newProfile: Profile = {
@@ -59,9 +61,7 @@ export function useUser() {
     }
   };
 
-  const signOut = async () => {
-    await supabase.auth.signOut();
-  };
+  const signOut = async () => { await supabase.auth.signOut(); };
 
   return { user, loading, signOut };
 }

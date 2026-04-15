@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { ChatHeader } from "./ChatHeader";
 import { PinnedMessage } from "./PinnedMessage";
 import { MessageList } from "./MessageList";
 import { MessageInput } from "./MessageInput";
 import { ChatSearchBar } from "./ChatSearchBar";
+import { ChatInfoPanel } from "./ChatInfoPanel";
 import { useMessages } from "@/hooks/useMessages";
 import { useAppStore } from "@/store/app.store";
 import { createClient } from "@/lib/supabase/client";
@@ -17,10 +18,16 @@ interface ChatWindowProps {
 }
 
 export function ChatWindow({ chatId }: ChatWindowProps) {
-  const { messages, loading, isTyping, sendMessage, toggleReaction } = useMessages(chatId);
-  const { chats, currentUser } = useAppStore();
+  const { messages, loading, isTyping, sendMessage, sendTyping, toggleReaction } = useMessages(chatId);
+  const { chats, currentUser, markChatRead } = useAppStore();
+
+  // Zero out unread badge when chat is opened
+  useEffect(() => {
+    markChatRead(chatId);
+  }, [chatId, markChatRead]);
   const [replyTo, setReplyTo] = useState<MessageWithSender | null>(null);
   const [showSearch, setShowSearch] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const messageRefs = useRef<Record<string, HTMLDivElement>>({});
@@ -68,11 +75,13 @@ export function ChatWindow({ chatId }: ChatWindowProps) {
   }, []);
 
   return (
-    <div className="flex flex-col h-full w-full" style={{ background: "var(--tg-chat-bg)" }}>
+    <div className="flex h-full w-full" style={{ background: "var(--tg-chat-bg)" }}>
+      <div className="flex flex-col flex-1 min-w-0">
       <ChatHeader
         chatId={chatId}
         chat={chat}
         onSearchOpen={() => setShowSearch(true)}
+        onInfoOpen={() => setShowInfo(true)}
       />
 
       {showSearch && (
@@ -107,6 +116,7 @@ export function ChatWindow({ chatId }: ChatWindowProps) {
           isTyping={isTyping}
           highlightedId={highlightedId}
           messageRefs={messageRefs}
+          chatMembers={chat?.members}
         />
       )}
 
@@ -116,7 +126,12 @@ export function ChatWindow({ chatId }: ChatWindowProps) {
         onCancelReply={() => setReplyTo(null)}
         onSend={handleSend}
         onSendVoice={handleSendVoice}
+        onTyping={sendTyping}
       />
+      </div>
+      {showInfo && chat && (
+        <ChatInfoPanel chat={chat} onClose={() => setShowInfo(false)} />
+      )}
     </div>
   );
 }

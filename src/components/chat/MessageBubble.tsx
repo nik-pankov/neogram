@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
-import { Check, CheckCheck, Reply, Forward, Trash2, Pin, Copy, Smile } from "lucide-react";
+import { Check, CheckCheck, Reply, Forward, Trash2, Pin, Copy, Smile, FileText } from "lucide-react";
 import type { MessageWithSender } from "@/types/database";
 import { formatFullTime } from "@/lib/format";
 import { UserAvatar } from "@/components/ui/ChatAvatar";
@@ -25,6 +25,9 @@ interface MessageBubbleProps {
   isLastInGroup: boolean;
   onReply: () => void;
   onReaction: (emoji: string) => void;
+  usersMap?: Record<string, string>;
+  messagesMap?: Record<string, MessageWithSender>;
+  isRead?: boolean; // true = other person has read this message
 }
 
 export function MessageBubble({
@@ -34,6 +37,9 @@ export function MessageBubble({
   isLastInGroup,
   onReply,
   onReaction,
+  usersMap = {},
+  messagesMap = {},
+  isRead,
 }: MessageBubbleProps) {
   const [showContext, setShowContext] = useState(false);
   const [showEmojiBar, setShowEmojiBar] = useState(false);
@@ -164,7 +170,14 @@ export function MessageBubble({
           )}
 
           {/* Reply preview above bubble */}
-          {message.reply_to && (
+          {message.reply_to_id && (() => {
+            const replyMsg = messagesMap[message.reply_to_id] ?? message.reply_to;
+            if (!replyMsg) return null;
+            const replyUserId = replyMsg.user_id;
+            const replyName = replyUserId === currentUser?.id
+              ? "You"
+              : (replyUserId ? usersMap[replyUserId] : null) ?? replyMsg.sender?.full_name ?? "Unknown";
+            return (
             <div
               className={cn(
                 "flex items-stretch gap-2 px-3 py-1.5 mb-px text-xs max-w-full rounded-t-2xl",
@@ -175,22 +188,23 @@ export function MessageBubble({
               <div className="w-0.5 rounded-full flex-shrink-0 self-stretch" style={{ background: "var(--tg-accent)" }} />
               <div className="min-w-0">
                 <div className="font-semibold truncate" style={{ color: "var(--tg-accent)" }}>
-                  {message.reply_to.user_id === currentUser?.id ? "You" : message.reply_to.sender?.full_name ?? "Unknown"}
+                  {replyName}
                 </div>
                 <div className="truncate opacity-70" style={{ color: "var(--tg-text)" }}>
-                  {message.reply_to.content}
+                  {replyMsg.content}
                 </div>
               </div>
             </div>
-          )}
+            );
+          })()}
 
           {/* Bubble */}
           <div
             className={cn(
               "relative px-3 py-2 rounded-2xl",
               isMe
-                ? cn("rounded-br-sm", message.reply_to && "rounded-tr-none")
-                : cn("rounded-bl-sm", message.reply_to && "rounded-tl-none"),
+                ? cn("rounded-br-sm", message.reply_to_id && "rounded-tr-none")
+                : cn("rounded-bl-sm", message.reply_to_id && "rounded-tl-none"),
               isMe && isLastInGroup ? "bubble-out" : "",
               !isMe && isLastInGroup ? "bubble-in" : "",
             )}
@@ -243,6 +257,18 @@ export function MessageBubble({
             {/* Content */}
             {message.type === "audio" && message.media_url ? (
               <AudioMessage url={message.media_url} isMe={isMe} />
+            ) : message.type === "image" && message.media_url ? (
+              <img src={message.media_url} alt="photo" className="rounded-xl max-w-full max-h-64 object-cover cursor-pointer"
+                onClick={() => window.open(message.media_url!, "_blank")} />
+            ) : message.type === "video" && message.media_url ? (
+              <video src={message.media_url} controls className="rounded-xl max-w-full max-h-64" />
+            ) : message.type === "file" && message.media_url ? (
+              <a href={message.media_url} target="_blank" rel="noreferrer"
+                className="flex items-center gap-2 text-sm hover:opacity-80 transition-opacity"
+                style={{ color: "var(--tg-accent)" }}>
+                <FileText size={16} />
+                <span className="truncate max-w-[200px]">{message.content ?? "File"}</span>
+              </a>
             ) : (
               <p
                 className="text-sm leading-relaxed whitespace-pre-wrap break-words"
@@ -261,7 +287,9 @@ export function MessageBubble({
                 {formatFullTime(message.created_at)}
               </span>
               {isMe && (
-                <CheckCheck size={13} style={{ color: "var(--tg-accent)" }} />
+                isRead
+                  ? <CheckCheck size={13} style={{ color: "var(--tg-accent)" }} />
+                  : <Check size={13} style={{ color: "rgba(255,255,255,0.45)" }} />
               )}
             </div>
           </div>

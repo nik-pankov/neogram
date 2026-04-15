@@ -3,20 +3,19 @@
 import { useState, useEffect } from "react";
 import { X, Search, Loader2, AlertCircle } from "lucide-react";
 import { useCreateChat } from "@/hooks/useCreateChat";
-import { useChats } from "@/hooks/useChats";
 import { UserAvatar } from "@/components/ui/ChatAvatar";
 import type { Profile } from "@/types/database";
 
 interface NewChatModalProps {
   onClose: () => void;
+  onRefetch?: () => void;
 }
 
-export function NewChatModal({ onClose }: NewChatModalProps) {
+export function NewChatModal({ onClose, onRefetch }: NewChatModalProps) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Profile[]>([]);
   const [searching, setSearching] = useState(false);
   const { searchUsers, openPrivateChat, loading, error } = useCreateChat();
-  const { refetch } = useChats();
 
   useEffect(() => {
     if (!query.trim()) { setResults([]); return; }
@@ -32,7 +31,7 @@ export function NewChatModal({ onClose }: NewChatModalProps) {
   const handleSelect = async (user: Profile) => {
     const chatId = await openPrivateChat(user.id);
     if (chatId) {
-      await refetch(); // обновить список чатов в сайдбаре
+      onRefetch?.();
       onClose();
     }
   };

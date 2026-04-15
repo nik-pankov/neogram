@@ -1,198 +1,168 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { createClient, getRealtimeClient } from "@/lib/supabase/client";
 import type { MessageWithSender } from "@/types/database";
 import { useAppStore } from "@/store/app.store";
 
 export function useMessages(chatId: string | null) {
   const [loading, setLoading] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
-  const { messages, setMessages, addMessage, currentUser } = useAppStore();
-  const supabase = createClient();
+  const { messages, setMessages, addMessage, currentUser, mutedChatIds } = useAppStore();
+
+  const supabase = createClient(); // REST-операции
+  const rt = getRealtimeClient();  // WebSocket каналы
+
   const typingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const typingChannelRef = useRef<ReturnType<typeof rt.channel> | null>(null);
+
+  const currentUserRef = useRef(currentUser);
+  useEffect(() => { currentUserRef.current = currentUser; }, [currentUser]);
+  const mutedRef = useRef(mutedChatIds);
+  useEffect(() => { mutedRef.current = mutedChatIds; }, [mutedChatIds]);
+  const chatIdRef = useRef(chatId);
+  useEffect(() => { chatIdRef.current = chatId; }, [chatId]);
 
   const fetchMessages = useCallback(async () => {
     if (!chatId) return;
     setLoading(true);
-
     const { data } = await supabase
       .from("messages")
-      .select(`
-        *,
-        sender:profiles(*),
-        reply_to:messages(
-          id, content, type, user_id,
-          sender:profiles(id, full_name)
-        ),
-        reactions(*)
-      `)
+      .select(`*, sender:profiles!user_id(*), reactions(*)`)
       .eq("chat_id", chatId)
       .is("deleted_at", null)
       .order("created_at", { ascending: true })
       .limit(100);
-
-    if (data) setMessages(chatId, data as MessageWithSender[]);
+    if (data) setMessages(chatId, data as unknown as MessageWithSender[]);
     setLoading(false);
-
-    // Mark as read
-    if (currentUser) {
-      await supabase
-        .from("chat_members")
+    const user = currentUserRef.current;
+    if (user) {
+      await supabase.from("chat_members")
         .update({ last_read_at: new Date().toISOString() })
         .eq("chat_id", chatId)
-        .eq("user_id", currentUser.id);
+        .eq("user_id", user.id);
     }
-  }, [chatId, currentUser, supabase, setMessages]);
+  }, [chatId, supabase, setMessages]);
 
+  useEffect(() => { fetchMessages(); }, [fetchMessages]);
+
+  // Typing broadcast
   useEffect(() => {
-    fetchMessages();
-  }, [fetchMessages]);
+    if (!chatId || !currentUser) return;
+    const ch = rt.channel(`room:${chatId}`, { config: { broadcast: { ack: false } } });
+    ch.on("broadcast", { event: "typing" }, (payload: { payload?: { userId?: string } }) => {
+      if (payload.payload?.userId !== currentUserRef.current?.id) {
+        setIsTyping(true);
+        if (typingTimer.current) clearTimeout(typingTimer.current);
+        typingTimer.current = setTimeout(() => setIsTyping(false), 3000);
+      }
+    }).subscribe((status: string) => console.log("[typing]", status));
+    typingChannelRef.current = ch;
+    return () => {
+      if (typingTimer.current) clearTimeout(typingTimer.current);
+      rt.removeChannel(ch);
+      typingChannelRef.current = null;
+    };
+  }, [chatId, currentUser, rt]);
 
-  // Realtime: new messages
+  const sendTyping = useCallback(() => {
+    const ch = typingChannelRef.current;
+    const user = currentUserRef.current;
+    if (!chatIdRef.current || !user || !ch) return;
+    ch.send({ type: "broadcast", event: "typing", payload: { userId: user.id } });
+  }, []);
+
+  // postgres_changes for new/updated messages
   useEffect(() => {
-    if (!chatId) return;
+    if (!chatId || !currentUser) return;
 
-    const channel = supabase
-      .channel(`messages:${chatId}`)
+    const channel = rt
+      .channel(`db:${chatId}`)
       .on(
         "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "messages",
-          filter: `chat_id=eq.${chatId}`,
-        },
-        async (payload) => {
-          // Fetch full message with sender info
+        { event: "INSERT", schema: "public", table: "messages" },
+        async (payload: { new: { id: string; chat_id: string; user_id: string; type: string; content: string | null } }) => {
+          if (payload.new.chat_id !== chatIdRef.current) return;
           const { data } = await supabase
             .from("messages")
-            .select(`
-              *,
-              sender:profiles(*),
-              reply_to:messages(id, content, type, user_id, sender:profiles(id, full_name)),
-              reactions(*)
-            `)
+            .select(`*, sender:profiles!user_id(*), reply_to:messages!reply_to_id(id, content, type, user_id, sender:profiles(id, full_name)), reactions(*)`)
             .eq("id", payload.new.id)
             .single();
-
-          if (data) {
-            addMessage(chatId, data as MessageWithSender);
-
-            // Mark read if this chat is open
-            if (currentUser && data.user_id !== currentUser.id) {
-              await supabase
-                .from("chat_members")
-                .update({ last_read_at: new Date().toISOString() })
-                .eq("chat_id", chatId)
-                .eq("user_id", currentUser.id);
-            }
+          if (!data) return;
+          addMessage(payload.new.chat_id, data as unknown as MessageWithSender);
+          const user = currentUserRef.current;
+          if (user && data.user_id !== user.id && document.hidden &&
+              Notification.permission === "granted" && !mutedRef.current.includes(payload.new.chat_id)) {
+            const senderName = (data as unknown as MessageWithSender).sender?.full_name ?? "Новое сообщение";
+            const body = data.type === "text" ? (data.content ?? "")
+              : data.type === "image" ? "🖼 Фото"
+              : data.type === "audio" ? "🎤 Голосовое сообщение"
+              : data.type === "video" ? "🎬 Видео" : "📎 Файл";
+            new Notification(senderName, { body, icon: "/icons/icon-192.png", tag: payload.new.chat_id });
+          }
+          if (user && data.user_id !== user.id) {
+            await supabase.from("chat_members")
+              .update({ last_read_at: new Date().toISOString() })
+              .eq("chat_id", payload.new.chat_id)
+              .eq("user_id", user.id);
           }
         }
       )
       .on(
         "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "messages",
-          filter: `chat_id=eq.${chatId}`,
-        },
-        async (payload) => {
+        { event: "UPDATE", schema: "public", table: "messages" },
+        async (payload: { new: { id: string; chat_id: string } }) => {
+          if (payload.new.chat_id !== chatIdRef.current) return;
           const { data } = await supabase
             .from("messages")
-            .select("*, sender:profiles(*), reactions(*)")
+            .select("*, sender:profiles!user_id(*), reactions(*)")
             .eq("id", payload.new.id)
             .single();
           if (data) {
-            const current = messages[chatId] ?? [];
-            setMessages(
-              chatId,
-              current.map((m) => (m.id === data.id ? (data as MessageWithSender) : m))
-            );
+            const current = useAppStore.getState().messages[payload.new.chat_id] ?? [];
+            setMessages(payload.new.chat_id, current.map((m) => m.id === data.id ? (data as MessageWithSender) : m));
           }
         }
       )
-      .subscribe();
+      .subscribe((status: string) => console.log("[messages]", status));
 
-    return () => { supabase.removeChannel(channel); };
-  }, [chatId, currentUser, supabase, addMessage, messages, setMessages]);
+    return () => { rt.removeChannel(channel); };
+  }, [chatId, currentUser, rt, addMessage, setMessages]);
 
-  const sendMessage = useCallback(
-    async (content: string, replyToId?: string) => {
-      if (!chatId || !currentUser || !content.trim()) return null;
+  const sendMessage = useCallback(async (content: string, replyToId?: string) => {
+    const user = currentUserRef.current;
+    if (!chatId || !user || !content.trim()) return null;
+    const { data, error } = await supabase
+      .from("messages")
+      .insert({ chat_id: chatId, user_id: user.id, content: content.trim(), type: "text", reply_to_id: replyToId ?? null })
+      .select("*, sender:profiles!user_id(*), reactions(*)")
+      .single();
+    if (error) { console.error("Send error:", error); return null; }
+    await supabase.from("chats").update({ updated_at: new Date().toISOString() }).eq("id", chatId);
+    return data;
+  }, [chatId, supabase]);
 
-      const { data, error } = await supabase
-        .from("messages")
-        .insert({
-          chat_id: chatId,
-          user_id: currentUser.id,
-          content: content.trim(),
-          type: "text",
-          reply_to_id: replyToId ?? null,
-        })
-        .select("*, sender:profiles(*), reactions(*)")
-        .single();
-
-      if (error) { console.error("Send error:", error); return null; }
-
-      // Update chat's updated_at
-      await supabase
-        .from("chats")
-        .update({ updated_at: new Date().toISOString() })
-        .eq("id", chatId);
-
-      return data;
-    },
-    [chatId, currentUser, supabase]
-  );
-
-  const toggleReaction = useCallback(
-    async (messageId: string, emoji: string) => {
-      if (!currentUser) return;
-
-      const { data: existing } = await supabase
-        .from("reactions")
-        .select("id")
-        .eq("message_id", messageId)
-        .eq("user_id", currentUser.id)
-        .eq("emoji", emoji)
-        .single();
-
-      if (existing) {
-        await supabase.from("reactions").delete().eq("id", existing.id);
-      } else {
-        await supabase.from("reactions").insert({
-          message_id: messageId,
-          user_id: currentUser.id,
-          emoji,
-        });
-      }
-
-      // Refresh reactions for this message
-      const { data: updatedMsg } = await supabase
-        .from("messages")
-        .select("*, sender:profiles(*), reactions(*)")
-        .eq("id", messageId)
-        .single();
-
-      if (updatedMsg && chatId) {
-        const current = messages[chatId] ?? [];
-        setMessages(
-          chatId,
-          current.map((m) => (m.id === messageId ? (updatedMsg as MessageWithSender) : m))
-        );
-      }
-    },
-    [currentUser, chatId, messages, setMessages, supabase]
-  );
+  const toggleReaction = useCallback(async (messageId: string, emoji: string) => {
+    const user = currentUserRef.current;
+    if (!user) return;
+    const { data: existing } = await supabase.from("reactions").select("id")
+      .eq("message_id", messageId).eq("user_id", user.id).eq("emoji", emoji).single();
+    if (existing) {
+      await supabase.from("reactions").delete().eq("id", existing.id);
+    } else {
+      await supabase.from("reactions").insert({ message_id: messageId, user_id: user.id, emoji });
+    }
+    const { data: updatedMsg } = await supabase.from("messages")
+      .select("*, sender:profiles!user_id(*), reactions(*)")
+      .eq("id", messageId).single();
+    if (updatedMsg && chatId) {
+      const current = useAppStore.getState().messages[chatId] ?? [];
+      setMessages(chatId, current.map((m) => m.id === messageId ? (updatedMsg as MessageWithSender) : m));
+    }
+  }, [chatId, supabase, setMessages]);
 
   return {
     messages: messages[chatId ?? ""] ?? [],
-    loading,
-    isTyping,
-    sendMessage,
-    toggleReaction,
-    refetch: fetchMessages,
+    loading, isTyping, sendMessage, sendTyping, toggleReaction, refetch: fetchMessages,
   };
 }
