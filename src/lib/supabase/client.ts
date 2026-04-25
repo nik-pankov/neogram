@@ -8,12 +8,7 @@ let instance: ReturnType<typeof createBrowserClient<Database>> | null = null
 
 export function createClient() {
   if (!instance) {
-    instance = createBrowserClient<Database>(URL, KEY, {
-      realtime: {
-        log_level: 'info',
-        params: { vsn: '1.0.0' },
-      },
-    })
+    instance = createBrowserClient<Database>(URL, KEY)
 
     // When the session token is refreshed (or user signs in/out),
     // update the Realtime connection so it uses the new JWT.
