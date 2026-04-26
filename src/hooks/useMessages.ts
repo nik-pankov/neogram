@@ -5,7 +5,7 @@ import { createClient, getRealtimeClient } from "@/lib/supabase/client";
 import type { MessageWithSender } from "@/types/database";
 import { useAppStore } from "@/store/app.store";
 
-export function useMessages(chatId: string | null) {
+export function useMessages(chatId: string | null, topicId: string | null = null) {
   const [loading, setLoading] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const { messages, setMessages, addMessage, replaceMessage, removeMessage, currentUser, mutedChatIds } = useAppStore();
@@ -22,15 +22,23 @@ export function useMessages(chatId: string | null) {
   useEffect(() => { mutedRef.current = mutedChatIds; }, [mutedChatIds]);
   const chatIdRef = useRef(chatId);
   useEffect(() => { chatIdRef.current = chatId; }, [chatId]);
+  // topicId is passed into INSERTs and used to filter the realtime stream so
+  // we only show messages from the active topic in forum chats.
+  const topicIdRef = useRef(topicId);
+  useEffect(() => { topicIdRef.current = topicId; }, [topicId]);
 
   const fetchMessages = useCallback(async () => {
     if (!chatId) return;
     setLoading(true);
-    const { data } = await supabase
+    let query = supabase
       .from("messages")
       .select(`*, sender:profiles!user_id(*), reactions(*)`)
       .eq("chat_id", chatId)
-      .is("deleted_at", null)
+      .is("deleted_at", null);
+    // Forum chats: scope to the selected topic.  Non-forum: all messages
+    // have topic_id = null, so the filter is a no-op when topicId is null.
+    query = topicId ? query.eq("topic_id", topicId) : query.is("topic_id", null);
+    const { data } = await query
       .order("created_at", { ascending: true })
       .limit(100);
     if (data) setMessages(chatId, data as unknown as MessageWithSender[]);
@@ -42,7 +50,7 @@ export function useMessages(chatId: string | null) {
         .eq("chat_id", chatId)
         .eq("user_id", user.id);
     }
-  }, [chatId, supabase, setMessages]);
+  }, [chatId, topicId, supabase, setMessages]);
 
   useEffect(() => { fetchMessages(); }, [fetchMessages]);
 
@@ -81,8 +89,10 @@ export function useMessages(chatId: string | null) {
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "messages" },
-        async (payload: { new: { id: string; chat_id: string; user_id: string; type: string; content: string | null } }) => {
+        async (payload: { new: { id: string; chat_id: string; topic_id: string | null; user_id: string; type: string; content: string | null } }) => {
           if (payload.new.chat_id !== chatIdRef.current) return;
+          // Filter by topic — ignore messages from other topics in the same chat.
+          if ((payload.new.topic_id ?? null) !== (topicIdRef.current ?? null)) return;
           const { data } = await supabase
             .from("messages")
             .select(`*, sender:profiles!user_id(*), reply_to:messages!reply_to_id(id, content, type, user_id, sender:profiles(id, full_name)), reactions(*)`)
@@ -146,6 +156,7 @@ export function useMessages(chatId: string | null) {
     const optimistic: MessageWithSender = {
       id: tempId,
       chat_id: chatId,
+      topic_id: topicId,
       user_id: user.id,
       content: trimmed,
       type: "text",
@@ -165,7 +176,7 @@ export function useMessages(chatId: string | null) {
     // 2) Real INSERT.
     const { data, error } = await supabase
       .from("messages")
-      .insert({ chat_id: chatId, user_id: user.id, content: trimmed, type: "text", reply_to_id: replyToId ?? null })
+      .insert({ chat_id: chatId, topic_id: topicId, user_id: user.id, content: trimmed, type: "text", reply_to_id: replyToId ?? null })
       .select("*, sender:profiles!user_id(*), reactions(*)")
       .single();
 
@@ -181,7 +192,7 @@ export function useMessages(chatId: string | null) {
 
     await supabase.from("chats").update({ updated_at: new Date().toISOString() }).eq("id", chatId);
     return data;
-  }, [chatId, supabase, addMessage, replaceMessage]);
+  }, [chatId, topicId, supabase, addMessage, replaceMessage]);
 
   // ── Edit ────────────────────────────────────────────────────────────────
   // UPDATE the row; the realtime UPDATE handler above will replace the message

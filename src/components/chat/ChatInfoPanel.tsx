@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { X, Camera, Edit2, Users, Image as ImageIcon, FileText, LogOut, Trash2, Bell, Check, Plus, Crown, Shield, ShieldOff, ChevronUp } from "lucide-react";
+import { X, Camera, Edit2, Users, Image as ImageIcon, FileText, LogOut, Trash2, Bell, Check, Plus, Crown, Shield, ShieldOff, ChevronUp, Hash } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useAppStore } from "@/store/app.store";
 import { ChatAvatar, UserAvatar } from "@/components/ui/ChatAvatar";
@@ -242,6 +242,36 @@ export function ChatInfoPanel({ chat, onClose }: ChatInfoPanelProps) {
                 <Bell size={17} style={{ color: "var(--tg-text-secondary)" }} />
                 Отключить уведомления
               </button>
+              {/* Forum-mode toggle: groups only, owner-only.  Enabling creates
+                  a default "Общий" topic so the chat isn't empty after the flip. */}
+              {isGroup && chat.type === "group" && isOwner && (
+                <button
+                  onClick={async () => {
+                    const next = !chat.is_forum;
+                    if (next && !confirm("Включить режим топиков? Все будущие сообщения попадут в топики.")) return;
+                    if (!next && !confirm("Выключить режим топиков? Топики останутся, но сообщения снова будут в общем потоке.")) return;
+                    await supabase.from("chats").update({ is_forum: next }).eq("id", chat.id);
+                    setChats(chats.map((c) => c.id === chat.id ? { ...c, is_forum: next } : c));
+                    if (next) {
+                      // Create the default "Общий" topic if there isn't one yet.
+                      const { data: existing } = await supabase
+                        .from("topics").select("id").eq("chat_id", chat.id).eq("is_general", true).maybeSingle();
+                      if (!existing) {
+                        await supabase.from("topics").insert({
+                          chat_id: chat.id, name: "Общий", emoji: "💬", is_general: true, position: 0,
+                        });
+                      }
+                    }
+                  }}
+                  className="flex items-center gap-3 w-full py-2 text-sm hover:bg-white/5 rounded-xl px-2 transition-colors"
+                  style={{ color: "var(--tg-text)" }}>
+                  <Hash size={17} style={{ color: chat.is_forum ? "var(--tg-accent)" : "var(--tg-text-secondary)" }} />
+                  <span className="flex-1 text-left">Топики</span>
+                  <span className="text-xs" style={{ color: chat.is_forum ? "var(--tg-accent)" : "var(--tg-text-secondary)" }}>
+                    {chat.is_forum ? "включены" : "выключены"}
+                  </span>
+                </button>
+              )}
             </div>
             {/* Danger zone */}
             <div className="px-4 py-3 mt-2" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>

@@ -8,6 +8,8 @@ import { MessageInput } from "./MessageInput";
 import { ChatSearchBar } from "./ChatSearchBar";
 import { ChatInfoPanel } from "./ChatInfoPanel";
 import { ForwardModal } from "./ForwardModal";
+import { TopicStrip } from "./TopicStrip";
+import { useTopics } from "@/hooks/useTopics";
 import { useMessages } from "@/hooks/useMessages";
 import { useAppStore } from "@/store/app.store";
 import { createClient } from "@/lib/supabase/client";
@@ -20,14 +22,19 @@ interface ChatWindowProps {
 
 export function ChatWindow({ chatId }: ChatWindowProps) {
   const {
+    chats, currentUser, markChatRead,
+    setEditingMessage, setForwardingMessage, forwardingMessage,
+    selectedTopicId,
+  } = useAppStore();
+  const chat = chats.find((c) => c.id === chatId);
+  const isForum = !!chat?.is_forum;
+  const { topics, createTopic } = useTopics(chatId, isForum);
+  // For forum chats, useMessages is keyed by both chat and active topic.
+  const {
     messages, loading, isTyping,
     sendMessage, sendTyping, toggleReaction,
     editMessage, deleteMessage, togglePin, forwardMessage,
-  } = useMessages(chatId);
-  const {
-    chats, currentUser, markChatRead,
-    setEditingMessage, setForwardingMessage, forwardingMessage,
-  } = useAppStore();
+  } = useMessages(chatId, isForum ? selectedTopicId : null);
 
   // Zero out unread badge when chat is opened
   useEffect(() => {
@@ -41,11 +48,11 @@ export function ChatWindow({ chatId }: ChatWindowProps) {
   const messageRefs = useRef<Record<string, HTMLDivElement>>({});
   const supabase = createClient();
 
-  const chat = chats.find((c) => c.id === chatId);
   const pinnedMessage = messages.find((m) => m.pinned);
   // Current user's role in this chat — drives admin-only message actions.
   const myRole = (chat?.members?.find((m) => m.user_id === currentUser?.id)?.role ?? null) as
     | "owner" | "admin" | "member" | null;
+  const canManageTopics = myRole === "owner" || myRole === "admin";
 
   const handleSend = async (content: string) => {
     await sendMessage(content, replyTo?.id);
@@ -94,6 +101,14 @@ export function ChatWindow({ chatId }: ChatWindowProps) {
         onSearchOpen={() => setShowSearch(true)}
         onInfoOpen={() => setShowInfo(true)}
       />
+
+      {isForum && (
+        <TopicStrip
+          topics={topics}
+          canManage={canManageTopics}
+          onCreate={createTopic}
+        />
+      )}
 
       {showSearch && (
         <ChatSearchBar

@@ -10,6 +10,10 @@ interface AppState {
   selectedChatId: string | null
   setSelectedChatId: (id: string | null) => void
 
+  // Selected topic within the active forum chat — null for non-forum chats.
+  selectedTopicId: string | null
+  setSelectedTopicId: (id: string | null) => void
+
   // Chats list
   chats: ChatWithLastMessage[]
   setChats: (chats: ChatWithLastMessage[]) => void
@@ -63,7 +67,10 @@ export const useAppStore = create<AppState>((set) => ({
   setCurrentUser: (user) => set({ currentUser: user }),
 
   selectedChatId: null,
-  setSelectedChatId: (id) => set({ selectedChatId: id }),
+  setSelectedChatId: (id) => set({ selectedChatId: id, selectedTopicId: null }),
+
+  selectedTopicId: null,
+  setSelectedTopicId: (id) => set({ selectedTopicId: id }),
 
   chats: [],
   setChats: (chats) => set({ chats }),

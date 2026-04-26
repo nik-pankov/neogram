@@ -53,6 +53,7 @@ export interface Database {
           description: string | null
           avatar_url: string | null
           created_by: string | null
+          is_forum: boolean
           created_at: string
           updated_at: string
         }
@@ -63,6 +64,7 @@ export interface Database {
           description?: string | null
           avatar_url?: string | null
           created_by?: string | null
+          is_forum?: boolean
           created_at?: string
           updated_at?: string
         }
@@ -73,9 +75,52 @@ export interface Database {
           description?: string | null
           avatar_url?: string | null
           created_by?: string | null
+          is_forum?: boolean
           updated_at?: string
         }
         Relationships: []
+      }
+      topics: {
+        Row: {
+          id: string
+          chat_id: string
+          name: string
+          emoji: string | null
+          is_general: boolean
+          position: number
+          archived: boolean
+          created_by: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          chat_id: string
+          name: string
+          emoji?: string | null
+          is_general?: boolean
+          position?: number
+          archived?: boolean
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          name?: string
+          emoji?: string | null
+          position?: number
+          archived?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "topics_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "chats"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       chat_members: {
         Row: {
@@ -117,6 +162,7 @@ export interface Database {
         Row: {
           id: string
           chat_id: string
+          topic_id: string | null
           user_id: string | null
           content: string | null
           type: 'text' | 'image' | 'video' | 'audio' | 'file' | 'sticker' | 'system'
@@ -131,6 +177,7 @@ export interface Database {
         Insert: {
           id?: string
           chat_id: string
+          topic_id?: string | null
           user_id?: string | null
           content?: string | null
           type?: 'text' | 'image' | 'video' | 'audio' | 'file' | 'sticker' | 'system'
@@ -296,6 +343,7 @@ export type Message = Database['public']['Tables']['messages']['Row']
 export type Reaction = Database['public']['Tables']['reactions']['Row']
 export type Folder = Database['public']['Tables']['folders']['Row']
 export type FolderChat = Database['public']['Tables']['folder_chats']['Row']
+export type Topic = Database['public']['Tables']['topics']['Row']
 
 export interface ChatWithLastMessage extends Chat {
   last_message?: Message & { sender?: Profile }
