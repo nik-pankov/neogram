@@ -23,14 +23,14 @@ export function WelcomeScreen() {
             NeoGram
           </h2>
           <p className="text-sm leading-relaxed" style={{ color: "var(--tg-text-secondary)" }}>
-            Select a chat from the left panel to start messaging.
-            Your conversations are fast, secure and always in sync.
+            Выберите чат из списка слева, чтобы начать общение.
+            Сообщения приходят быстро, защищённо и всегда синхронизированы.
           </p>
         </div>
 
         {/* Feature pills */}
         <div className="flex flex-wrap gap-2 justify-center mt-2">
-          {["🔒 Encrypted", "⚡ Real-time", "📱 Cross-platform", "☁️ Cloud sync"].map((feat) => (
+          {["🔒 Шифрование", "⚡ Реальное время", "📱 На всех устройствах", "☁️ Облачная синхронизация"].map((feat) => (
             <span
               key={feat}
               className="px-3 py-1 rounded-full text-xs font-medium"

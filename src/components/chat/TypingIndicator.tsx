@@ -22,7 +22,7 @@ export function TypingIndicator({ name }: { name?: string }) {
       </div>
       {name && (
         <span className="text-xs" style={{ color: "var(--tg-text-secondary)" }}>
-          {name} is typing...
+          {name} печатает…
         </span>
       )}
     </div>

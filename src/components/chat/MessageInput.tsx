@@ -67,13 +67,13 @@ export function MessageInput({ chatId, replyTo, onCancelReply, onSend, onSendVoi
 
   const handleLocation = useCallback(() => {
     setShowAttach(false);
-    if (!navigator.geolocation) { alert("Geolocation not supported"); return; }
+    if (!navigator.geolocation) { alert("Геолокация не поддерживается"); return; }
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const { latitude, longitude } = pos.coords;
-        onSend(`📍 Location: https://maps.google.com/?q=${latitude},${longitude}`);
+        onSend(`📍 Местоположение: https://maps.google.com/?q=${latitude},${longitude}`);
       },
-      () => alert("Could not get location")
+      () => alert("Не удалось определить местоположение")
     );
   }, [onSend]);
 
@@ -151,10 +151,10 @@ export function MessageInput({ chatId, replyTo, onCancelReply, onSend, onSendVoi
           <div className="mx-3 mb-2 rounded-2xl overflow-hidden shadow-xl relative z-20"
             style={{ background: "var(--tg-context-bg)", border: "1px solid rgba(255,255,255,0.08)" }}>
             {[
-              { icon: ImageIcon, label: "Photo or Video", color: "#5288c1", action: () => photoInputRef.current?.click() },
-              { icon: FileText,  label: "File",           color: "#7c5cbf", action: () => fileInputRef.current?.click() },
-              { icon: Camera,    label: "Camera",          color: "#e53e3e", action: () => cameraInputRef.current?.click() },
-              { icon: MapPin,    label: "Location",        color: "#38a169", action: handleLocation },
+              { icon: ImageIcon, label: "Фото или видео", color: "#5288c1", action: () => photoInputRef.current?.click() },
+              { icon: FileText,  label: "Файл",            color: "#7c5cbf", action: () => fileInputRef.current?.click() },
+              { icon: Camera,    label: "Камера",          color: "#e53e3e", action: () => cameraInputRef.current?.click() },
+              { icon: MapPin,    label: "Местоположение",  color: "#38a169", action: handleLocation },
             ].map(({ icon: Icon, label, color, action }) => (
               <button key={label} onClick={action}
                 className="flex items-center gap-3 w-full px-4 py-3 text-sm transition-colors hover:bg-white/8"
@@ -172,7 +172,7 @@ export function MessageInput({ chatId, replyTo, onCancelReply, onSend, onSendVoi
 
       {uploading && (
         <div className="mx-3 mb-1 text-xs px-3 py-1.5 rounded-xl" style={{ background: "var(--tg-input)", color: "var(--tg-text-secondary)" }}>
-          Uploading...
+          Загрузка…
         </div>
       )}
 
@@ -184,7 +184,7 @@ export function MessageInput({ chatId, replyTo, onCancelReply, onSend, onSendVoi
             <Reply size={13} style={{ color: "var(--tg-accent)", flexShrink: 0 }} />
             <div className="flex-1 min-w-0">
               <div className="text-xs font-semibold" style={{ color: "var(--tg-accent)" }}>
-                {replyTo.sender?.full_name ?? "You"}
+                {replyTo.sender?.full_name ?? "Вы"}
               </div>
               <div className="text-xs truncate" style={{ color: "var(--tg-text-secondary)" }}>
                 {replyTo.content}
@@ -213,7 +213,7 @@ export function MessageInput({ chatId, replyTo, onCancelReply, onSend, onSendVoi
             onChange={(e) => setText(e.target.value)}
             onInput={handleInput}
             onKeyDown={handleKeyDown}
-            placeholder="Message..."
+            placeholder="Сообщение…"
             rows={1}
             className="flex-1 bg-transparent resize-none outline-none text-sm leading-6 py-1.5 max-h-[140px] overflow-y-auto"
             style={{ color: "var(--tg-text)" }}

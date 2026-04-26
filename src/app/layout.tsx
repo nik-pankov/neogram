@@ -4,7 +4,7 @@ import { Providers } from "@/components/providers";
 
 export const metadata: Metadata = {
   title: "NeoGram",
-  description: "Fast and secure messenger",
+  description: "Быстрый и безопасный мессенджер",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -27,7 +27,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark h-full">
+    <html lang="ru" className="dark h-full">
       <head>
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />

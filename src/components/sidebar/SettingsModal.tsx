@@ -21,7 +21,7 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSave = async () => {
-    if (!currentUser || !fullName.trim()) { setError("Name is required"); return; }
+    if (!currentUser || !fullName.trim()) { setError("Имя обязательно"); return; }
     setSaving(true);
     setError(null);
     const { data, error: err } = await supabase
@@ -77,12 +77,12 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
             style={{ color: "var(--tg-accent)" }}>
             <ArrowLeft size={20} />
           </button>
-          <span className="font-semibold text-sm flex-1" style={{ color: "var(--tg-text)" }}>Edit Profile</span>
+          <span className="font-semibold text-sm flex-1" style={{ color: "var(--tg-text)" }}>Редактировать профиль</span>
           <button onClick={handleSave} disabled={saving}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all disabled:opacity-50"
             style={{ background: saved ? "rgba(82,193,100,0.2)" : "var(--tg-accent)", color: saved ? "#52c164" : "#fff" }}>
             {saving ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}
-            {saved ? "Saved!" : "Save"}
+            {saved ? "Сохранено!" : "Сохранить"}
           </button>
         </div>
 
@@ -113,7 +113,7 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
 
             <div className="text-center">
               <div className="font-semibold text-base" style={{ color: "var(--tg-text)" }}>
-                {currentUser.full_name ?? "No name"}
+                {currentUser.full_name ?? "Без имени"}
               </div>
               {currentUser.username && (
                 <div className="text-sm" style={{ color: "var(--tg-text-secondary)" }}>
@@ -127,7 +127,7 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
                 className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full hover:bg-white/10 transition-colors"
                 style={{ color: "#ef4444" }}>
                 <Trash2 size={12} />
-                Remove photo
+                Удалить фото
               </button>
             )}
           </div>
@@ -135,40 +135,40 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
           {/* Fields */}
           <div className="px-4 py-4 space-y-1">
             <p className="text-xs font-semibold uppercase tracking-wider px-1 mb-3"
-              style={{ color: "var(--tg-text-secondary)" }}>Personal Info</p>
+              style={{ color: "var(--tg-text-secondary)" }}>Личная информация</p>
 
             <Field
               icon={<User size={16} />}
-              label="Name"
+              label="Имя"
               value={fullName}
               onChange={setFullName}
-              placeholder="Your name"
+              placeholder="Ваше имя"
               required
             />
             <Field
               icon={<AtSign size={16} />}
-              label="Username"
+              label="Имя пользователя"
               value={username}
               onChange={(v) => setUsername(v.replace(/[^a-zA-Z0-9_]/g, ""))}
-              placeholder="username (letters, numbers, _)"
-              hint="People can find you by @username"
+              placeholder="username (буквы, цифры, _)"
+              hint="Люди смогут найти вас по @username"
             />
             <Field
               icon={<Info size={16} />}
-              label="Bio"
+              label="О себе"
               value={bio}
               onChange={setBio}
-              placeholder="A few words about yourself"
+              placeholder="Несколько слов о себе"
               multiline
               hint={`${bio.length}/70`}
               maxLength={70}
             />
             <Field
               icon={<Phone size={16} />}
-              label="Phone"
+              label="Телефон"
               value={phone}
               onChange={setPhone}
-              placeholder="+1 234 567 890"
+              placeholder="+7 999 123 45 67"
               type="tel"
             />
           </div>

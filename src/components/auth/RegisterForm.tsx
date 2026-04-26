@@ -35,7 +35,7 @@ export function RegisterForm() {
       if (error) throw error;
       setSuccess(true);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Registration failed");
+      setError(err instanceof Error ? err.message : "Не удалось зарегистрироваться");
     } finally {
       setLoading(false);
     }
@@ -58,15 +58,15 @@ export function RegisterForm() {
             style={{ background: "rgba(77,205,94,0.15)", border: "2px solid var(--tg-online)" }}>
             ✉️
           </div>
-          <h2 className="text-xl font-bold mb-2" style={{ color: "var(--tg-text)" }}>Check your email</h2>
+          <h2 className="text-xl font-bold mb-2" style={{ color: "var(--tg-text)" }}>Проверьте почту</h2>
           <p className="text-sm" style={{ color: "var(--tg-text-secondary)" }}>
-            We sent a confirmation link to <span style={{ color: "var(--tg-accent)" }}>{email}</span>.<br />
-            Click it to activate your account.
+            Мы отправили ссылку для подтверждения на <span style={{ color: "var(--tg-accent)" }}>{email}</span>.<br />
+            Перейдите по ней, чтобы активировать аккаунт.
           </p>
           <Link href="/login"
             className="inline-block mt-6 px-6 py-2.5 rounded-xl text-sm font-semibold"
             style={{ background: "var(--tg-accent)", color: "#fff" }}>
-            Back to Login
+            К входу
           </Link>
         </div>
       </div>
@@ -88,8 +88,8 @@ export function RegisterForm() {
             ✈️
           </div>
           <div className="text-center">
-            <h1 className="text-2xl font-bold" style={{ color: "var(--tg-text)" }}>Create Account</h1>
-            <p className="text-sm mt-1" style={{ color: "var(--tg-text-secondary)" }}>Join NeoGram today</p>
+            <h1 className="text-2xl font-bold" style={{ color: "var(--tg-text)" }}>Создать аккаунт</h1>
+            <p className="text-sm mt-1" style={{ color: "var(--tg-text-secondary)" }}>Присоединяйтесь к NeoGram</p>
           </div>
         </div>
 
@@ -100,7 +100,7 @@ export function RegisterForm() {
               <User size={16} style={{ color: "var(--tg-text-secondary)", flexShrink: 0 }} />
               <input
                 type="text"
-                placeholder="Full name"
+                placeholder="Имя и фамилия"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 required
@@ -114,7 +114,7 @@ export function RegisterForm() {
               <Mail size={16} style={{ color: "var(--tg-text-secondary)", flexShrink: 0 }} />
               <input
                 type="email"
-                placeholder="Email"
+                placeholder="Эл. почта"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -128,7 +128,7 @@ export function RegisterForm() {
               <Lock size={16} style={{ color: "var(--tg-text-secondary)", flexShrink: 0 }} />
               <input
                 type={showPass ? "text" : "password"}
-                placeholder="Password (min 6 chars)"
+                placeholder="Пароль (минимум 6 символов)"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -150,15 +150,15 @@ export function RegisterForm() {
               style={{ background: "var(--tg-accent)", color: "#fff" }}
             >
               {loading && <Loader2 size={16} className="animate-spin" />}
-              <span>Create Account</span>
+              <span>Создать аккаунт</span>
             </button>
           </form>
         </div>
 
         <p className="text-center text-sm mt-4" style={{ color: "var(--tg-text-secondary)" }}>
-          Already have an account?{" "}
+          Уже есть аккаунт?{" "}
           <Link href="/login" className="font-medium" style={{ color: "var(--tg-accent)" }}>
-            Sign in
+            Войти
           </Link>
         </p>
       </div>

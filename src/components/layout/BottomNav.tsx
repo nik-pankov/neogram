@@ -4,10 +4,10 @@ import { MessageCircle, Phone, Bookmark, Settings } from "lucide-react";
 import { useState } from "react";
 
 const TABS = [
-  { id: "chats", label: "Chats", icon: MessageCircle, badge: 4 },
-  { id: "calls", label: "Calls", icon: Phone, badge: 0 },
-  { id: "saved", label: "Saved", icon: Bookmark, badge: 0 },
-  { id: "settings", label: "Settings", icon: Settings, badge: 0 },
+  { id: "chats", label: "Чаты", icon: MessageCircle, badge: 4 },
+  { id: "calls", label: "Звонки", icon: Phone, badge: 0 },
+  { id: "saved", label: "Избранное", icon: Bookmark, badge: 0 },
+  { id: "settings", label: "Настройки", icon: Settings, badge: 0 },
 ];
 
 export function BottomNav() {

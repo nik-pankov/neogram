@@ -82,11 +82,11 @@ export function MessageBubble({
   }, []);
 
   const contextItems: ContextItem[] = [
-    { icon: Reply, label: "Reply", action: () => { onReply(); setShowContext(false); } },
-    { icon: Copy, label: "Copy", action: () => { navigator.clipboard.writeText(message.content ?? ""); setShowContext(false); } },
-    { icon: Pin, label: "Pin", action: () => setShowContext(false) },
-    { icon: Forward, label: "Forward", action: () => setShowContext(false) },
-    { icon: Trash2, label: "Delete", danger: true, action: () => setShowContext(false) },
+    { icon: Reply, label: "Ответить", action: () => { onReply(); setShowContext(false); } },
+    { icon: Copy, label: "Копировать", action: () => { navigator.clipboard.writeText(message.content ?? ""); setShowContext(false); } },
+    { icon: Pin, label: "Закрепить", action: () => setShowContext(false) },
+    { icon: Forward, label: "Переслать", action: () => setShowContext(false) },
+    { icon: Trash2, label: "Удалить", danger: true, action: () => setShowContext(false) },
   ];
 
   return (
@@ -175,8 +175,8 @@ export function MessageBubble({
             if (!replyMsg) return null;
             const replyUserId = replyMsg.user_id;
             const replyName = replyUserId === currentUser?.id
-              ? "You"
-              : (replyUserId ? usersMap[replyUserId] : null) ?? replyMsg.sender?.full_name ?? "Unknown";
+              ? "Вы"
+              : (replyUserId ? usersMap[replyUserId] : null) ?? replyMsg.sender?.full_name ?? "Без имени";
             return (
             <div
               className={cn(
@@ -284,7 +284,7 @@ export function MessageBubble({
             {/* Time + status row */}
             <div className="flex items-center justify-end gap-1 mt-1 -mb-0.5">
               {message.edited_at && (
-                <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.4)" }}>edited</span>
+                <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.4)" }}>изменено</span>
               )}
               <span className="text-[10px] leading-none" style={{ color: "rgba(255,255,255,0.45)" }}>
                 {formatFullTime(message.created_at)}

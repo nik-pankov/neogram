@@ -25,7 +25,7 @@ export function PinnedMessage({ message }: PinnedMessageProps) {
       <Pin size={14} style={{ color: "var(--tg-accent)", flexShrink: 0 }} />
       <div className="flex-1 min-w-0">
         <div className="text-xs font-semibold mb-0.5" style={{ color: "var(--tg-accent)" }}>
-          Pinned Message
+          Закреплённое сообщение
         </div>
         <div className="text-xs truncate" style={{ color: "var(--tg-text-secondary)" }}>
           {message.content}

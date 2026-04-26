@@ -89,7 +89,7 @@ export function ChatInfoPanel({ chat, onClose }: ChatInfoPanelProps) {
 
   const handleLeave = async () => {
     if (!currentUser) return;
-    if (!confirm("Leave this chat?")) return;
+    if (!confirm("Покинуть этот чат?")) return;
     await supabase.from("chat_members").delete().eq("chat_id", chat.id).eq("user_id", currentUser.id);
     setChats(chats.filter((c) => c.id !== chat.id));
     setSelectedChatId(null);
@@ -115,7 +115,7 @@ export function ChatInfoPanel({ chat, onClose }: ChatInfoPanelProps) {
           <X size={18} />
         </button>
         <span className="text-sm font-semibold" style={{ color: "var(--tg-text)" }}>
-          {isGroup ? "Group Info" : "User Info"}
+          {isGroup ? "Информация о группе" : "Профиль пользователя"}
         </span>
         {isOwnerOrAdmin && !editing && (
           <button onClick={() => setEditing(true)} className="ml-auto p-2 rounded-full hover:bg-white/10"
@@ -155,7 +155,7 @@ export function ChatInfoPanel({ chat, onClose }: ChatInfoPanelProps) {
               className="w-full text-sm rounded-xl px-3 py-2 outline-none text-center font-semibold"
               style={{ background: "var(--tg-input)", color: "var(--tg-text)" }} />
             <textarea value={description} onChange={(e) => setDescription(e.target.value)}
-              placeholder="Description..." rows={2}
+              placeholder="Описание…" rows={2}
               className="w-full text-sm rounded-xl px-3 py-2 outline-none resize-none"
               style={{ background: "var(--tg-input)", color: "var(--tg-text)" }} />
           </div>
@@ -166,11 +166,11 @@ export function ChatInfoPanel({ chat, onClose }: ChatInfoPanelProps) {
             </div>
             {isGroup ? (
               <div className="text-xs" style={{ color: "var(--tg-text-secondary)" }}>
-                {chat.members?.length ?? 0} members
+                {chat.members?.length ?? 0} участников
               </div>
             ) : (
               <div className="text-xs" style={{ color: "var(--tg-text-secondary)" }}>
-                {otherUser?.username ? `@${otherUser.username}` : "No username"}
+                {otherUser?.username ? `@${otherUser.username}` : "Без имени пользователя"}
               </div>
             )}
             {chat.description && (
@@ -206,7 +206,7 @@ export function ChatInfoPanel({ chat, onClose }: ChatInfoPanelProps) {
           <div>
             {!isGroup && otherUser?.bio && (
               <div className="px-4 py-3" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-                <div className="text-xs mb-1" style={{ color: "var(--tg-text-secondary)" }}>Bio</div>
+                <div className="text-xs mb-1" style={{ color: "var(--tg-text-secondary)" }}>О себе</div>
                 <div className="text-sm" style={{ color: "var(--tg-text)" }}>{otherUser.bio}</div>
               </div>
             )}
@@ -216,12 +216,12 @@ export function ChatInfoPanel({ chat, onClose }: ChatInfoPanelProps) {
                 style={{ color: "var(--tg-text)" }}
                 onClick={() => setTab("media")}>
                 <ImageIcon size={17} style={{ color: "var(--tg-text-secondary)" }} />
-                Shared Media
+                Общие медиа
               </button>
               <button className="flex items-center gap-3 w-full py-2 text-sm hover:bg-white/5 rounded-xl px-2 transition-colors"
                 style={{ color: "var(--tg-text)" }}>
                 <Bell size={17} style={{ color: "var(--tg-text-secondary)" }} />
-                Mute Notifications
+                Отключить уведомления
               </button>
             </div>
             {/* Danger zone */}
@@ -231,17 +231,17 @@ export function ChatInfoPanel({ chat, onClose }: ChatInfoPanelProps) {
                   className="flex items-center gap-3 w-full py-2 text-sm hover:bg-white/5 rounded-xl px-2 transition-colors"
                   style={{ color: "#ef4444" }}>
                   <LogOut size={17} />
-                  Leave Group
+                  Покинуть группу
                 </button>
               )}
               <button onClick={async () => {
-                if (!confirm("Delete all messages?")) return;
+                if (!confirm("Удалить все сообщения?")) return;
                 await supabase.from("messages").update({ deleted_at: new Date().toISOString() }).eq("chat_id", chat.id);
               }}
                 className="flex items-center gap-3 w-full py-2 text-sm hover:bg-white/5 rounded-xl px-2 transition-colors"
                 style={{ color: "#ef4444" }}>
                 <Trash2 size={17} />
-                Clear History
+                Очистить историю
               </button>
             </div>
           </div>
@@ -255,9 +255,9 @@ export function ChatInfoPanel({ chat, onClose }: ChatInfoPanelProps) {
                 <UserAvatar user={member} size="sm" />
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium truncate" style={{ color: "var(--tg-text)" }}>
-                    {member.full_name ?? member.username ?? "Unknown"}
+                    {member.full_name ?? member.username ?? "Без имени"}
                     {member.id === currentUser?.id && (
-                      <span className="ml-1 text-xs" style={{ color: "var(--tg-text-secondary)" }}>(you)</span>
+                      <span className="ml-1 text-xs" style={{ color: "var(--tg-text-secondary)" }}>(вы)</span>
                     )}
                   </div>
                   <div className="text-xs capitalize" style={{ color: "var(--tg-accent)" }}>{member.role}</div>
@@ -278,9 +278,9 @@ export function ChatInfoPanel({ chat, onClose }: ChatInfoPanelProps) {
         {tab === "media" && (
           <div className="p-2">
             {loadingMedia ? (
-              <div className="text-center py-8 text-sm" style={{ color: "var(--tg-text-secondary)" }}>Loading...</div>
+              <div className="text-center py-8 text-sm" style={{ color: "var(--tg-text-secondary)" }}>Загрузка…</div>
             ) : media.length === 0 ? (
-              <div className="text-center py-8 text-sm" style={{ color: "var(--tg-text-secondary)" }}>No media yet</div>
+              <div className="text-center py-8 text-sm" style={{ color: "var(--tg-text-secondary)" }}>Медиа пока нет</div>
             ) : (
               <>
                 {/* Images/videos grid */}
@@ -305,7 +305,7 @@ export function ChatInfoPanel({ chat, onClose }: ChatInfoPanelProps) {
                       style={{ background: "rgba(82,136,193,0.2)" }}>
                       <FileText size={15} style={{ color: "var(--tg-accent)" }} />
                     </div>
-                    <span className="text-sm truncate">{m.content ?? "File"}</span>
+                    <span className="text-sm truncate">{m.content ?? "Файл"}</span>
                   </a>
                 ))}
               </>

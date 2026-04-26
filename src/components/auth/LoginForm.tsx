@@ -27,7 +27,7 @@ export function LoginForm() {
       router.push("/");
       router.refresh();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      setError(err instanceof Error ? err.message : "Не удалось войти");
     } finally {
       setLoading(false);
     }
@@ -64,7 +64,7 @@ export function LoginForm() {
               NeoGram
             </h1>
             <p className="text-sm mt-1" style={{ color: "var(--tg-text-secondary)" }}>
-              Sign in to your account
+              Войдите в свой аккаунт
             </p>
           </div>
         </div>
@@ -84,7 +84,7 @@ export function LoginForm() {
               <Mail size={16} style={{ color: "var(--tg-text-secondary)", flexShrink: 0 }} />
               <input
                 type="email"
-                placeholder="Email"
+                placeholder="Эл. почта"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -101,7 +101,7 @@ export function LoginForm() {
               <Lock size={16} style={{ color: "var(--tg-text-secondary)", flexShrink: 0 }} />
               <input
                 type={showPass ? "text" : "password"}
-                placeholder="Password"
+                placeholder="Пароль"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -130,16 +130,16 @@ export function LoginForm() {
               style={{ background: "var(--tg-accent)", color: "#fff" }}
             >
               {loading && <Loader2 size={16} className="animate-spin" />}
-              <span>Sign In</span>
+              <span>Войти</span>
             </button>
           </form>
         </div>
 
         {/* Register link */}
         <p className="text-center text-sm mt-4" style={{ color: "var(--tg-text-secondary)" }}>
-          No account?{" "}
+          Нет аккаунта?{" "}
           <Link href="/register" className="font-medium" style={{ color: "var(--tg-accent)" }}>
-            Create one
+            Зарегистрироваться
           </Link>
         </p>
       </div>

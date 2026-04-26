@@ -57,7 +57,7 @@ export function NewGroupModal({ onClose, onRefetch }: { onClose: () => void; onR
         <div className="flex items-center justify-between px-4 py-3"
           style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
           <h2 className="font-semibold text-sm" style={{ color: "var(--tg-text)" }}>
-            {step === "pick" ? "Add Members" : "Group Name"}
+            {step === "pick" ? "Добавить участников" : "Название группы"}
           </h2>
           <button onClick={onClose} className="p-1.5 rounded-full hover:bg-white/10"
             style={{ color: "var(--tg-text-secondary)" }}><X size={16} /></button>
@@ -69,7 +69,7 @@ export function NewGroupModal({ onClose, onRefetch }: { onClose: () => void; onR
               <div className="flex items-center gap-2 rounded-xl px-3 py-2" style={{ background: "var(--tg-input)" }}>
                 <Search size={15} style={{ color: "var(--tg-text-secondary)" }} />
                 <input autoFocus value={query} onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search users..." className="flex-1 bg-transparent text-sm outline-none"
+                  placeholder="Поиск пользователей…" className="flex-1 bg-transparent text-sm outline-none"
                   style={{ color: "var(--tg-text)" }} />
               </div>
               {selected.length > 0 && (
@@ -90,7 +90,7 @@ export function NewGroupModal({ onClose, onRefetch }: { onClose: () => void; onR
                   className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-white/5 transition-colors">
                   <UserAvatar user={user} size="sm" />
                   <span className="flex-1 text-sm text-left" style={{ color: "var(--tg-text)" }}>
-                    {user.full_name ?? user.username ?? "Unknown"}
+                    {user.full_name ?? user.username ?? "Без имени"}
                   </span>
                   {selected.find((u) => u.id === user.id) && (
                     <Check size={15} style={{ color: "var(--tg-accent)" }} />
@@ -102,19 +102,19 @@ export function NewGroupModal({ onClose, onRefetch }: { onClose: () => void; onR
               <button disabled={selected.length === 0} onClick={() => setStep("name")}
                 className="w-full py-2.5 rounded-xl text-sm font-semibold disabled:opacity-40"
                 style={{ background: "var(--tg-accent)", color: "#fff" }}>
-                Next ({selected.length} selected)
+                Далее (выбрано: {selected.length})
               </button>
             </div>
           </>
         ) : (
           <div className="p-4 space-y-3">
             <input autoFocus value={groupName} onChange={(e) => setGroupName(e.target.value)}
-              placeholder="Group name" className="w-full bg-transparent text-sm outline-none rounded-xl px-3 py-2"
+              placeholder="Название группы" className="w-full bg-transparent text-sm outline-none rounded-xl px-3 py-2"
               style={{ background: "var(--tg-input)", color: "var(--tg-text)" }} />
             <button onClick={handleCreate} disabled={!groupName.trim() || loading}
               className="w-full py-2.5 rounded-xl text-sm font-semibold disabled:opacity-40"
               style={{ background: "var(--tg-accent)", color: "#fff" }}>
-              {loading ? <Loader2 size={16} className="animate-spin mx-auto" /> : "Create Group"}
+              {loading ? <Loader2 size={16} className="animate-spin mx-auto" /> : "Создать группу"}
             </button>
           </div>
         )}

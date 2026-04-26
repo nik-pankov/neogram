@@ -23,11 +23,11 @@ export function ChatListItem({ chat, isSelected, onClick }: ChatListItemProps) {
   const isPinned = chat.is_pinned;
 
   const getMessagePreview = () => {
-    if (!lastMsg) return "No messages yet";
-    if (lastMsg.type === "image") return "🖼 Photo";
-    if (lastMsg.type === "audio") return "🎤 Voice message";
-    if (lastMsg.type === "video") return "🎬 Video";
-    if (lastMsg.type === "file") return "📎 File";
+    if (!lastMsg) return "Сообщений пока нет";
+    if (lastMsg.type === "image") return "🖼 Фото";
+    if (lastMsg.type === "audio") return "🎤 Голосовое сообщение";
+    if (lastMsg.type === "video") return "🎬 Видео";
+    if (lastMsg.type === "file") return "📎 Файл";
     return lastMsg.content ?? "";
   };
 

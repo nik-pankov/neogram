@@ -10,10 +10,10 @@ import { useChats } from "@/hooks/useChats";
 import { Loader2 } from "lucide-react";
 
 const FOLDERS = [
-  { id: null,        name: "All",      emoji: null,  unread: 0 },
-  { id: "personal",  name: "Personal", emoji: "👤",  unread: 0 },
-  { id: "work",      name: "Work",     emoji: "💼",  unread: 0 },
-  { id: "channels",  name: "Channels", emoji: "📢",  unread: 0 },
+  { id: null,        name: "Все",      emoji: null,  unread: 0 },
+  { id: "personal",  name: "Личные",   emoji: "👤",  unread: 0 },
+  { id: "work",      name: "Группы",   emoji: "💼",  unread: 0 },
+  { id: "channels",  name: "Каналы",   emoji: "📢",  unread: 0 },
 ];
 
 export function Sidebar() {

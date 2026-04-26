@@ -50,7 +50,7 @@ export function ChatSearchBar({ messages, onClose, onJumpTo }: ChatSearchBarProp
       <input
         autoFocus
         type="text"
-        placeholder="Search in chat..."
+        placeholder="Поиск в чате…"
         value={query}
         onChange={(e) => handleChange(e.target.value)}
         className="flex-1 bg-transparent text-sm outline-none"
@@ -59,7 +59,7 @@ export function ChatSearchBar({ messages, onClose, onJumpTo }: ChatSearchBarProp
 
       {query.trim() && (
         <span className="text-xs flex-shrink-0" style={{ color: "var(--tg-text-secondary)" }}>
-          {total > 0 ? `${idx + 1}/${total}` : "0 results"}
+          {total > 0 ? `${idx + 1}/${total}` : "ничего не найдено"}
         </span>
       )}
 

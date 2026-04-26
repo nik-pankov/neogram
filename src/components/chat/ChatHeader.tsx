@@ -18,35 +18,35 @@ export function ChatHeader({ chatId, chat, onSearchOpen, onInfoOpen }: ChatHeade
   const [showMenu, setShowMenu] = useState(false);
   const isMuted = mutedChatIds.includes(chatId);
 
-  const name = chat?.name ?? "Chat";
+  const name = chat?.name ?? "Чат";
   const type = chat?.type ?? "private";
 
   const getSubtitle = () => {
     if (!chat) return "";
-    if (type === "channel") return `${(chat.members?.length ?? 0) || "?"} subscribers`;
-    if (type === "group") return `${chat.members?.length ?? 0} members`;
+    if (type === "channel") return `${(chat.members?.length ?? 0) || "?"} подписчиков`;
+    if (type === "group") return `${chat.members?.length ?? 0} участников`;
     // private — check online status
     const other = chat.other_user as { online_at?: string } | undefined;
     if (other?.online_at) {
       const diff = Date.now() - new Date(other.online_at).getTime();
-      if (diff < 3 * 60000) return "online";
+      if (diff < 3 * 60000) return "в сети";
       const mins = Math.floor(diff / 60000);
-      if (mins < 60) return `last seen ${mins}m ago`;
+      if (mins < 60) return `был(а) ${mins} мин назад`;
       const hours = Math.floor(mins / 60);
-      if (hours < 24) return `last seen ${hours}h ago`;
-      return "last seen recently";
+      if (hours < 24) return `был(а) ${hours} ч назад`;
+      return "был(а) недавно";
     }
     return "";
   };
 
   const subtitle = getSubtitle();
-  const isOnline = subtitle === "online";
+  const isOnline = subtitle === "в сети";
 
   const menuItems = [
-    { icon: Search, label: "Search in chat", action: () => { setShowMenu(false); onSearchOpen?.(); } },
-    { icon: Bell, label: isMuted ? "Unmute notifications" : "Mute notifications", action: () => { toggleMutedChat(chatId); setShowMenu(false); } },
-    { icon: Trash2, label: "Clear history", danger: true, action: () => setShowMenu(false) },
-    { icon: UserX, label: "Delete chat", danger: true, action: () => setShowMenu(false) },
+    { icon: Search, label: "Поиск в чате", action: () => { setShowMenu(false); onSearchOpen?.(); } },
+    { icon: Bell, label: isMuted ? "Включить уведомления" : "Отключить уведомления", action: () => { toggleMutedChat(chatId); setShowMenu(false); } },
+    { icon: Trash2, label: "Очистить историю", danger: true, action: () => setShowMenu(false) },
+    { icon: UserX, label: "Удалить чат", danger: true, action: () => setShowMenu(false) },
   ];
 
   return (

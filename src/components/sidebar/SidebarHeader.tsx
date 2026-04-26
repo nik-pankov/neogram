@@ -32,14 +32,14 @@ export function SidebarHeader({ onNewChat, onRefetch }: SidebarHeaderProps) {
       .select("id")
       .eq("type", "private")
       .eq("created_by", currentUser.id)
-      .eq("name", "Saved Messages")
+      .eq("name", "Избранное")
       .limit(1)
       .single();
     if (existing) { setSelectedChatId(existing.id); return; }
     // Create one
     const { data: chat } = await supabase
       .from("chats")
-      .insert({ type: "private", name: "Saved Messages", created_by: currentUser.id })
+      .insert({ type: "private", name: "Избранное", created_by: currentUser.id })
       .select("id").single();
     if (!chat) return;
     await supabase.from("chat_members").insert({ chat_id: chat.id, user_id: currentUser.id, role: "owner" });
@@ -48,12 +48,12 @@ export function SidebarHeader({ onNewChat, onRefetch }: SidebarHeaderProps) {
   };
 
   const menuItems = [
-    { icon: Users,      label: "New Group",       action: () => { setMenuOpen(false); setShowNewGroup(true); } },
-    { icon: Bookmark,   label: "Saved Messages",  action: openSavedMessages },
-    { icon: Settings,   label: "Settings",        action: () => { setMenuOpen(false); setShowSettings(true); } },
-    { icon: Moon,       label: "Night Mode",      action: () => setMenuOpen(false), note: "Active" },
-    { icon: HelpCircle, label: "Help",            action: () => { setMenuOpen(false); window.open("https://github.com", "_blank"); } },
-    { icon: LogOut,     label: "Sign Out", danger: true, action: async () => { setMenuOpen(false); await signOut(); } },
+    { icon: Users,      label: "Новая группа",    action: () => { setMenuOpen(false); setShowNewGroup(true); } },
+    { icon: Bookmark,   label: "Избранное",       action: openSavedMessages },
+    { icon: Settings,   label: "Настройки",       action: () => { setMenuOpen(false); setShowSettings(true); } },
+    { icon: Moon,       label: "Тёмная тема",     action: () => setMenuOpen(false), note: "Вкл" },
+    { icon: HelpCircle, label: "Помощь",          action: () => { setMenuOpen(false); window.open("https://github.com", "_blank"); } },
+    { icon: LogOut,     label: "Выйти",           danger: true, action: async () => { setMenuOpen(false); await signOut(); } },
   ];
 
   return (
@@ -97,10 +97,10 @@ export function SidebarHeader({ onNewChat, onRefetch }: SidebarHeaderProps) {
                       <UserAvatar user={currentUser} size="sm" />
                       <div className="min-w-0">
                         <div className="text-sm font-semibold truncate" style={{ color: "var(--tg-text)" }}>
-                          {currentUser.full_name ?? "User"}
+                          {currentUser.full_name ?? "Пользователь"}
                         </div>
                         <div className="text-xs truncate" style={{ color: "var(--tg-text-secondary)" }}>
-                          {currentUser.username ? `@${currentUser.username}` : "No username"}
+                          {currentUser.username ? `@${currentUser.username}` : "Без имени пользователя"}
                         </div>
                       </div>
                     </div>
@@ -130,7 +130,7 @@ export function SidebarHeader({ onNewChat, onRefetch }: SidebarHeaderProps) {
           <Search size={15} style={{ color: "var(--tg-text-secondary)" }} />
           <input
             type="text"
-            placeholder="Search"
+            placeholder="Поиск"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onFocus={() => setIsSearchFocused(true)}

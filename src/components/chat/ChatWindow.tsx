@@ -59,7 +59,7 @@ export function ChatWindow({ chatId }: ChatWindowProps) {
       user_id: currentUser.id,
       type: "audio",
       media_url: publicUrl,
-      content: `🎤 Voice message (${Math.floor(duration / 60)}:${String(duration % 60).padStart(2, "0")})`,
+      content: `🎤 Голосовое сообщение (${Math.floor(duration / 60)}:${String(duration % 60).padStart(2, "0")})`,
     });
 
     await supabase.from("chats").update({ updated_at: new Date().toISOString() }).eq("id", chatId);
@@ -103,7 +103,7 @@ export function ChatWindow({ chatId }: ChatWindowProps) {
           <div className="text-center px-6">
             <div className="text-4xl mb-3">👋</div>
             <p className="text-sm" style={{ color: "var(--tg-text-secondary)" }}>
-              No messages yet. Say hello!
+              Сообщений пока нет. Поздоровайтесь!
             </p>
           </div>
         </div>

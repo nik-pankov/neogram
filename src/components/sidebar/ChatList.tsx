@@ -18,7 +18,7 @@ export function ChatList({ chats, selectedChatId, onChatSelect }: ChatListProps)
       <div className="flex flex-col items-center justify-center flex-1 gap-3 px-6 py-12">
         <div className="text-5xl">💬</div>
         <p className="text-sm" style={{ color: "var(--tg-text-secondary)" }}>
-          No chats found
+          Чаты не найдены
         </p>
       </div>
     );

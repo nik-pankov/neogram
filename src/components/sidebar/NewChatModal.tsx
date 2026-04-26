@@ -51,7 +51,7 @@ export function NewChatModal({ onClose, onRefetch }: NewChatModalProps) {
           className="flex items-center justify-between px-4 py-3"
           style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
         >
-          <h2 className="font-semibold text-sm" style={{ color: "var(--tg-text)" }}>New Message</h2>
+          <h2 className="font-semibold text-sm" style={{ color: "var(--tg-text)" }}>Новое сообщение</h2>
           <button
             onClick={onClose}
             className="p-1.5 rounded-full hover:bg-white/10 transition-colors"
@@ -71,7 +71,7 @@ export function NewChatModal({ onClose, onRefetch }: NewChatModalProps) {
             <input
               autoFocus
               type="text"
-              placeholder="Search by name or username..."
+              placeholder="Поиск по имени или @username…"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               className="flex-1 bg-transparent text-sm outline-none"
@@ -96,12 +96,12 @@ export function NewChatModal({ onClose, onRefetch }: NewChatModalProps) {
         <div className="max-h-72 overflow-y-auto pb-2">
           {!query.trim() && (
             <p className="text-center text-sm py-8" style={{ color: "var(--tg-text-secondary)" }}>
-              Type a name to search
+              Введите имя для поиска
             </p>
           )}
           {query.trim() && !searching && results.length === 0 && (
             <p className="text-center text-sm py-8" style={{ color: "var(--tg-text-secondary)" }}>
-              No users found
+              Пользователи не найдены
             </p>
           )}
           {results.map((user) => (
@@ -118,7 +118,7 @@ export function NewChatModal({ onClose, onRefetch }: NewChatModalProps) {
               )}
               <div className="text-left min-w-0">
                 <div className="text-sm font-medium truncate" style={{ color: "var(--tg-text)" }}>
-                  {user.full_name ?? "Unknown"}
+                  {user.full_name ?? "Без имени"}
                 </div>
                 {user.username && (
                   <div className="text-xs truncate" style={{ color: "var(--tg-text-secondary)" }}>
