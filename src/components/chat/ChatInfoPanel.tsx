@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { X, Camera, Edit2, Users, Image as ImageIcon, FileText, LogOut, Trash2, Bell, Check, Plus } from "lucide-react";
+import { X, Camera, Edit2, Users, Image as ImageIcon, FileText, LogOut, Trash2, Bell, Check, Plus, Crown, Shield, ShieldOff, ChevronUp } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useAppStore } from "@/store/app.store";
 import { ChatAvatar, UserAvatar } from "@/components/ui/ChatAvatar";
@@ -18,9 +18,13 @@ export function ChatInfoPanel({ chat, onClose }: ChatInfoPanelProps) {
   const { currentUser, setSelectedChatId, chats, setChats } = useAppStore();
   const supabase = createClient();
   const isGroup = chat.type === "group" || chat.type === "channel";
-  const isOwnerOrAdmin = chat.members?.some(
-    (m) => m.user_id === currentUser?.id && (m.role === "owner" || m.role === "admin")
-  );
+  // Role of the current user in this chat — derived from `chat.members`.
+  // Used to gate UI actions (rename, manage members, etc.).
+  const myRole: "owner" | "admin" | "member" | null =
+    (chat.members?.find((m) => m.user_id === currentUser?.id)?.role as
+      | "owner" | "admin" | "member" | undefined) ?? null;
+  const isOwner = myRole === "owner";
+  const isOwnerOrAdmin = myRole === "owner" || myRole === "admin";
 
   const [tab, setTab] = useState<Tab>("info");
   const [editing, setEditing] = useState(false);
@@ -100,6 +104,21 @@ export function ChatInfoPanel({ chat, onClose }: ChatInfoPanelProps) {
     await supabase.from("chat_members").delete().eq("chat_id", chat.id).eq("user_id", userId);
     setMembers((m) => m.filter((u) => u.id !== userId));
   };
+
+  // Owner-only: promote a member → admin (or admin → member).
+  // We don't allow self-demotion or touching the owner from this UI.
+  const setMemberRole = async (userId: string, role: "admin" | "member") => {
+    const { error } = await supabase
+      .from("chat_members")
+      .update({ role })
+      .eq("chat_id", chat.id)
+      .eq("user_id", userId);
+    if (error) { console.error("setMemberRole:", error); return; }
+    setMembers((ms) => ms.map((m) => m.id === userId ? { ...m, role } : m));
+  };
+
+  const roleLabel = (role: string) =>
+    role === "owner" ? "Владелец" : role === "admin" ? "Администратор" : "";
 
   const otherUser = !isGroup ? (chat.other_user as Profile | null) : null;
 
@@ -250,27 +269,79 @@ export function ChatInfoPanel({ chat, onClose }: ChatInfoPanelProps) {
         {/* Members tab */}
         {tab === "members" && isGroup && (
           <div className="py-2">
-            {members.map((member) => (
-              <div key={member.id} className="flex items-center gap-3 px-4 py-2.5 hover:bg-white/5 group">
-                <UserAvatar user={member} size="sm" />
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium truncate" style={{ color: "var(--tg-text)" }}>
-                    {member.full_name ?? member.username ?? "Без имени"}
-                    {member.id === currentUser?.id && (
-                      <span className="ml-1 text-xs" style={{ color: "var(--tg-text-secondary)" }}>(вы)</span>
+            {members.map((member) => {
+              const isSelf = member.id === currentUser?.id;
+              const isMemberOwner = member.role === "owner";
+              const isMemberAdmin = member.role === "admin";
+              // Permissions for the action buttons next to each member.
+              // Owner: full control over admins and members (not over self/owner).
+              // Admin: can only kick plain members.
+              const canPromote = isOwner && !isSelf && member.role === "member";
+              const canDemote  = isOwner && !isSelf && isMemberAdmin;
+              const canRemove  = !isSelf && !isMemberOwner && (
+                isOwner || (myRole === "admin" && member.role === "member")
+              );
+              return (
+                <div key={member.id} className="flex items-center gap-3 px-4 py-2.5 hover:bg-white/5 group">
+                  <UserAvatar user={member} size="sm" />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium truncate flex items-center gap-1" style={{ color: "var(--tg-text)" }}>
+                      {isMemberOwner && (
+                        <Crown size={12} className="flex-shrink-0" style={{ color: "#f5b50a" }} />
+                      )}
+                      {isMemberAdmin && (
+                        <Shield size={12} className="flex-shrink-0" style={{ color: "var(--tg-accent)" }} />
+                      )}
+                      <span className="truncate">{member.full_name ?? member.username ?? "Без имени"}</span>
+                      {isSelf && (
+                        <span className="text-xs flex-shrink-0" style={{ color: "var(--tg-text-secondary)" }}>(вы)</span>
+                      )}
+                    </div>
+                    {(isMemberOwner || isMemberAdmin) && (
+                      <div className="text-xs" style={{ color: "var(--tg-accent)" }}>{roleLabel(member.role)}</div>
                     )}
                   </div>
-                  <div className="text-xs capitalize" style={{ color: "var(--tg-accent)" }}>{member.role}</div>
+
+                  {/* Hover actions — promote / demote / kick */}
+                  <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {canPromote && (
+                      <button
+                        onClick={() => setMemberRole(member.id, "admin")}
+                        title="Сделать администратором"
+                        className="p-1.5 rounded-full hover:bg-white/10 transition-all"
+                        style={{ color: "var(--tg-accent)" }}
+                      >
+                        <ChevronUp size={14} />
+                      </button>
+                    )}
+                    {canDemote && (
+                      <button
+                        onClick={() => setMemberRole(member.id, "member")}
+                        title="Снять администратора"
+                        className="p-1.5 rounded-full hover:bg-white/10 transition-all"
+                        style={{ color: "var(--tg-text-secondary)" }}
+                      >
+                        <ShieldOff size={14} />
+                      </button>
+                    )}
+                    {canRemove && (
+                      <button
+                        onClick={() => {
+                          if (confirm(`Удалить ${member.full_name ?? "участника"} из чата?`)) {
+                            handleRemoveMember(member.id);
+                          }
+                        }}
+                        title="Удалить из чата"
+                        className="p-1.5 rounded-full hover:bg-white/10 transition-all"
+                        style={{ color: "#ef4444" }}
+                      >
+                        <X size={14} />
+                      </button>
+                    )}
+                  </div>
                 </div>
-                {isOwnerOrAdmin && member.id !== currentUser?.id && (
-                  <button onClick={() => handleRemoveMember(member.id)}
-                    className="opacity-0 group-hover:opacity-100 p-1.5 rounded-full hover:bg-white/10 transition-all"
-                    style={{ color: "#ef4444" }}>
-                    <X size={14} />
-                  </button>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 

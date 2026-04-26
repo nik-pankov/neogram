@@ -23,6 +23,8 @@ interface MessageListProps {
   highlightedId?: string | null;
   messageRefs?: React.MutableRefObject<Record<string, HTMLDivElement>>;
   chatMembers?: (ChatMember & { profile?: unknown })[];
+  /** Role of the current user in this chat — propagated to MessageBubble. */
+  myRole?: "owner" | "admin" | "member" | null;
 }
 
 function shouldShowDateSeparator(prev: MessageWithSender | null, current: MessageWithSender): boolean {
@@ -44,6 +46,7 @@ export function MessageList({
   highlightedId,
   messageRefs,
   chatMembers,
+  myRole,
 }: MessageListProps) {
   const { currentUser } = useAppStore();
 
@@ -162,6 +165,7 @@ export function MessageList({
                 usersMap={usersMap}
                 messagesMap={messagesMap}
                 isRead={isRead}
+                myRole={myRole}
               />
             </div>
           );

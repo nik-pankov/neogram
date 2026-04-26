@@ -34,6 +34,8 @@ interface MessageBubbleProps {
   usersMap?: Record<string, string>;
   messagesMap?: Record<string, MessageWithSender>;
   isRead?: boolean; // true = other person has read this message
+  /** Role of the current user in this chat — admins/owners can moderate any message. */
+  myRole?: "owner" | "admin" | "member" | null;
 }
 
 export function MessageBubble({
@@ -50,7 +52,9 @@ export function MessageBubble({
   usersMap = {},
   messagesMap = {},
   isRead,
+  myRole,
 }: MessageBubbleProps) {
+  const canModerate = myRole === "owner" || myRole === "admin";
   const [showContext, setShowContext] = useState(false);
   const [showEmojiBar, setShowEmojiBar] = useState(false);
   const [contextPos, setContextPos] = useState({ x: 0, y: 0 });
@@ -107,7 +111,7 @@ export function MessageBubble({
     ...(onForward ? [
       { icon: Forward, label: "Переслать", action: () => { onForward(); setShowContext(false); } },
     ] : []),
-    ...(isMe && onDelete ? [
+    ...((isMe || canModerate) && onDelete ? [
       { icon: Trash2, label: "Удалить", danger: true, action: () => {
           if (confirm("Удалить сообщение?")) onDelete();
           setShowContext(false);

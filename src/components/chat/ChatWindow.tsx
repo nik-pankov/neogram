@@ -43,6 +43,9 @@ export function ChatWindow({ chatId }: ChatWindowProps) {
 
   const chat = chats.find((c) => c.id === chatId);
   const pinnedMessage = messages.find((m) => m.pinned);
+  // Current user's role in this chat — drives admin-only message actions.
+  const myRole = (chat?.members?.find((m) => m.user_id === currentUser?.id)?.role ?? null) as
+    | "owner" | "admin" | "member" | null;
 
   const handleSend = async (content: string) => {
     await sendMessage(content, replyTo?.id);
@@ -129,6 +132,7 @@ export function ChatWindow({ chatId }: ChatWindowProps) {
           highlightedId={highlightedId}
           messageRefs={messageRefs}
           chatMembers={chat?.members}
+          myRole={myRole}
         />
       )}
 
