@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Providers } from "@/components/providers";
+import { THEME_INIT_SCRIPT } from "@/hooks/useTheme";
 
 export const metadata: Metadata = {
   title: "КУБ",
@@ -27,8 +28,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ru" className="dark h-full">
+    <html lang="ru" className="h-full" suppressHydrationWarning>
       <head>
+        {/* Set theme class BEFORE hydration to avoid a flash of wrong theme. */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="mobile-web-app-capable" content="yes" />

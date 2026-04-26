@@ -8,6 +8,7 @@ import { UserAvatar } from "@/components/ui/ChatAvatar";
 import { AudioMessage } from "./AudioMessage";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/store/app.store";
+import { FormattedText } from "@/lib/formatText";
 
 const EMOJI_QUICK = ["👍", "❤️", "😂", "😮", "😢", "🔥", "👏", "🎉"];
 
@@ -303,7 +304,7 @@ export function MessageBubble({
                 className="text-sm leading-relaxed whitespace-pre-wrap break-words"
                 style={{ color: "var(--tg-text)" }}
               >
-                {message.content}
+                <FormattedText content={message.content ?? ""} />
               </p>
             )}
 

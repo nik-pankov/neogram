@@ -23,7 +23,7 @@
     --ring: 199 89% 48%;
     --radius: 0.5rem;
 
-    /* NeoGram — Telegram dark palette */
+    /* КУБ — dark palette (Telegram-style, default) */
     --tg-bg: #17212b;
     --tg-sidebar: #0e1621;
     --tg-chat-bg: #17212b;
@@ -44,6 +44,33 @@
     --tg-pinned: #242f3d;
     --tg-context-bg: #212d3b;
     --tg-shadow: rgba(0,0,0,0.35);
+    /* Subtle wallpaper dots pattern colour for the chat surface. */
+    --tg-pattern: rgba(255,255,255,0.018);
+  }
+
+  /* Light palette: applied when <html> has the `light` class. */
+  :root.light {
+    --tg-bg: #ffffff;
+    --tg-sidebar: #ffffff;
+    --tg-chat-bg: #ffffff;
+    --tg-header: #ffffff;
+    --tg-input: #f0f3f7;
+    --tg-message-out: #effdde;
+    --tg-message-in: #ffffff;
+    --tg-accent: #3390ec;
+    --tg-accent-hover: #2a7fd6;
+    --tg-text: #0f172a;
+    --tg-text-secondary: #64748b;
+    --tg-border: #e5e7eb;
+    --tg-hover: #f3f4f6;
+    --tg-active: #d6e4f7;
+    --tg-online: #4fae4e;
+    --tg-unread: #3390ec;
+    --tg-muted: #b0b0b0;
+    --tg-pinned: #f0f3f7;
+    --tg-context-bg: #ffffff;
+    --tg-shadow: rgba(15,23,42,0.12);
+    --tg-pattern: rgba(0,0,0,0.025);
   }
 }
 
@@ -73,19 +100,25 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Scrollbar */
+/* Scrollbar — adapt to current theme via opacity hack on text colour */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.22); }
+::-webkit-scrollbar-thumb { background: var(--tg-muted); border-radius: 2px; opacity: 0.5; }
+::-webkit-scrollbar-thumb:hover { background: var(--tg-text-secondary); }
 
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* Telegram chat wallpaper pattern */
+/* Telegram chat wallpaper pattern.
+   Dots are very faint; brightness is supplied via --tg-pattern so the same
+   pattern reads correctly on dark and light surfaces. */
 .chat-bg {
   background-color: var(--tg-chat-bg);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cg fill='%23ffffff' fill-opacity='0.018'%3E%3Cpath d='M0 0h40v40H0zm40 40h40v40H40z'/%3E%3C/g%3E%3C/svg%3E");
+  background-image:
+    radial-gradient(var(--tg-pattern) 1px, transparent 1px),
+    radial-gradient(var(--tg-pattern) 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-position: 0 0, 20px 20px;
 }
 
 /* Message bubble tails */

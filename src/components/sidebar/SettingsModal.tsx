@@ -1,14 +1,16 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { ArrowLeft, Camera, Check, Trash2, Phone, User, AtSign, Info, Loader2 } from "lucide-react";
+import { ArrowLeft, Camera, Check, Trash2, Phone, User, AtSign, Info, Loader2, Sun, Moon } from "lucide-react";
 import { useAppStore } from "@/store/app.store";
 import { createClient } from "@/lib/supabase/client";
 import { UserAvatar } from "@/components/ui/ChatAvatar";
+import { useTheme } from "@/hooks/useTheme";
 
 export function SettingsModal({ onClose }: { onClose: () => void }) {
   const { currentUser, setCurrentUser } = useAppStore();
   const supabase = createClient();
+  const { theme, setTheme } = useTheme();
 
   const [fullName, setFullName] = useState(currentUser?.full_name ?? "");
   const [username, setUsername] = useState(currentUser?.username ?? "");
@@ -178,6 +180,37 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
               {error}
             </div>
           )}
+
+          {/* Appearance section */}
+          <div className="px-4 py-4 mt-2" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+            <p className="text-xs font-semibold uppercase tracking-wider px-1 mb-3"
+              style={{ color: "var(--tg-text-secondary)" }}>Внешний вид</p>
+            <div className="rounded-2xl overflow-hidden" style={{ background: "var(--tg-input)" }}>
+              <div className="flex items-center gap-3 px-4 py-3">
+                {theme === "dark" ? (
+                  <Moon size={16} style={{ color: "var(--tg-accent)" }} />
+                ) : (
+                  <Sun size={16} style={{ color: "var(--tg-accent)" }} />
+                )}
+                <span className="flex-1 text-sm" style={{ color: "var(--tg-text)" }}>Тема</span>
+                <div className="flex rounded-full p-0.5" style={{ background: "rgba(0,0,0,0.2)" }}>
+                  {(["dark", "light"] as const).map((opt) => (
+                    <button
+                      key={opt}
+                      onClick={() => setTheme(opt)}
+                      className="px-3 py-1 rounded-full text-xs font-medium transition-colors"
+                      style={{
+                        background: theme === opt ? "var(--tg-accent)" : "transparent",
+                        color: theme === opt ? "#fff" : "var(--tg-text-secondary)",
+                      }}
+                    >
+                      {opt === "dark" ? "Тёмная" : "Светлая"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
