@@ -50,8 +50,11 @@ NODE_ENV=production npm run build
 echo "▶ npm ci (bot)"
 ( cd bot && npm ci --no-audit --no-fund --omit=dev )
 
-echo "▶ npm ci (push-worker)"
-( cd push-worker && npm ci --no-audit --no-fund --omit=dev )
+echo "▶ npm install (push-worker)"
+# Use `install` instead of `ci`: the worker doesn't ship with a lockfile yet
+# (the dev sandbox can't reach the npm registry to generate one) — `install`
+# creates it on first run and re-uses it afterwards.
+( cd push-worker && npm install --no-audit --no-fund --omit=dev )
 
 echo "▶ pm2 reload"
 # startOrReload on first run starts processes, on subsequent runs does zero-downtime reload.
