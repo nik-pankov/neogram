@@ -158,7 +158,7 @@ sudo -u deploy bash deploy/deploy.sh
 | Файл | Назначение |
 |---|---|
 | `setup-server.sh` | Одноразовый bootstrap чистого Ubuntu 24.04 |
-| `ecosystem.config.js` | Манифест pm2 для двух сервисов |
+| `ecosystem.config.cjs` | Манифест pm2 для двух сервисов |
 | `nginx.conf.template` | Шаблон nginx-сайта (домен подставляется setup'ом) |
 | `webhook.js` | Маленький Node-listener, валидирует HMAC от GitHub и зовёт `deploy.sh` |
 | `webhook.service` | systemd-юнит для webhook'а |

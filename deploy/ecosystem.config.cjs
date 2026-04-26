@@ -1,5 +1,5 @@
 // pm2 process manifest — keeps both services running and restarts on crash.
-// Used by deploy.sh:   pm2 startOrReload deploy/ecosystem.config.js --env production
+// Used by deploy.sh:   pm2 startOrReload deploy/ecosystem.config.cjs --env production
 module.exports = {
   apps: [
     {

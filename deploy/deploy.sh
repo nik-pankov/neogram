@@ -43,6 +43,8 @@ echo "▶ npm ci (bot)"
 
 echo "▶ pm2 reload"
 # startOrReload on first run starts processes, on subsequent runs does zero-downtime reload.
-pm2 startOrReload "$APP_DIR/deploy/ecosystem.config.js" --update-env
+# Note: the manifest is .cjs because deploy/package.json declares "type": "module"
+# (so node treats webhook.js as ESM); pm2's manifest still uses CommonJS module.exports.
+pm2 startOrReload "$APP_DIR/deploy/ecosystem.config.cjs" --update-env
 
 echo "✅ deploy finished at $(date -Iseconds)"
