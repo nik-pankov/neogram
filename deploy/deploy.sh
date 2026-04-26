@@ -31,6 +31,15 @@ echo "▶ git fetch + reset"
 git fetch --prune origin
 git reset --hard origin/main
 
+# After git reset our own file may have changed on disk, but bash already
+# loaded the old version into memory.  Re-exec into the freshly pulled copy
+# so the rest of the deploy uses the current logic, not stale instructions.
+if [ -z "${DEPLOY_REEXEC:-}" ]; then
+  export DEPLOY_REEXEC=1
+  echo "▶ re-exec deploy.sh from updated source"
+  exec bash "$0" "$@"
+fi
+
 echo "▶ npm ci (web)"
 # `--omit=dev` keeps the prod image lean; if you need devDeps for build, switch to npm ci then npm prune --production after build.
 npm ci --no-audit --no-fund
