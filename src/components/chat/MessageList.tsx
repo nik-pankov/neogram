@@ -13,6 +13,10 @@ interface MessageListProps {
   messages: MessageWithSender[];
   onReply: (msg: MessageWithSender) => void;
   onReaction: (messageId: string, emoji: string) => void;
+  onEdit?: (msg: MessageWithSender) => void;
+  onDelete?: (msg: MessageWithSender) => void;
+  onTogglePin?: (msg: MessageWithSender) => void;
+  onForward?: (msg: MessageWithSender) => void;
   bottomRef: RefObject<HTMLDivElement | null>;
   isTyping?: boolean;
   typingUser?: string;
@@ -30,6 +34,10 @@ export function MessageList({
   messages,
   onReply,
   onReaction,
+  onEdit,
+  onDelete,
+  onTogglePin,
+  onForward,
   bottomRef,
   isTyping = false,
   typingUser,
@@ -147,6 +155,10 @@ export function MessageList({
                 isLastInGroup={!isSameSenderAsNext}
                 onReply={() => onReply(msg)}
                 onReaction={(emoji) => onReaction(msg.id, emoji)}
+                onEdit={onEdit ? () => onEdit(msg) : undefined}
+                onDelete={onDelete ? () => onDelete(msg) : undefined}
+                onTogglePin={onTogglePin ? () => onTogglePin(msg) : undefined}
+                onForward={onForward ? () => onForward(msg) : undefined}
                 usersMap={usersMap}
                 messagesMap={messagesMap}
                 isRead={isRead}

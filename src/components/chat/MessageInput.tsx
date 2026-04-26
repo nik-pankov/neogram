@@ -1,12 +1,15 @@
 "use client";
 
-import { useState, useRef, useCallback, KeyboardEvent } from "react";
-import { Paperclip, Smile, Mic, Send, X, Reply, Image as ImageIcon, FileText, Camera, MapPin } from "lucide-react";
+import { useState, useRef, useCallback, useEffect, KeyboardEvent } from "react";
+import { Paperclip, Smile, Mic, Send, X, Reply, Pencil, Image as ImageIcon, FileText, Camera, MapPin } from "lucide-react";
 import type { MessageWithSender } from "@/types/database";
 import { cn } from "@/lib/utils";
 import { VoiceRecorder } from "./VoiceRecorder";
 import { createClient } from "@/lib/supabase/client";
 import { useAppStore } from "@/store/app.store";
+
+const DRAFT_PREFIX = "kub:draft:";
+const draftKey = (chatId: string) => `${DRAFT_PREFIX}${chatId}`;
 
 const EMOJI_PANEL = [
   "😀","😂","🥰","😎","🤔","😭","🔥","❤️","👍","👏",
@@ -20,11 +23,13 @@ interface MessageInputProps {
   replyTo: MessageWithSender | null;
   onCancelReply: () => void;
   onSend: (content: string) => void;
+  /** Called instead of onSend when an editing session is active. */
+  onEdit?: (messageId: string, newContent: string) => Promise<void>;
   onSendVoice?: (blob: Blob, duration: number) => void;
   onTyping?: () => void;
 }
 
-export function MessageInput({ chatId, replyTo, onCancelReply, onSend, onSendVoice, onTyping }: MessageInputProps) {
+export function MessageInput({ chatId, replyTo, onCancelReply, onSend, onEdit, onSendVoice, onTyping }: MessageInputProps) {
   const [text, setText] = useState("");
   const [showEmoji, setShowEmoji] = useState(false);
   const [showAttach, setShowAttach] = useState(false);
@@ -36,7 +41,46 @@ export function MessageInput({ chatId, replyTo, onCancelReply, onSend, onSendVoi
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const hasText = text.trim().length > 0;
   const supabase = createClient();
-  const { currentUser, addMessage } = useAppStore();
+  const { currentUser, addMessage, editingMessage, setEditingMessage } = useAppStore();
+  const isEditing = editingMessage !== null && editingMessage.chat_id === chatId;
+  // Holds the draft we had before entering edit-mode, so we can restore it on cancel.
+  const preEditTextRef = useRef<string | null>(null);
+
+  // ── Draft handling: load on chat switch, persist on every keystroke ─────
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const saved = localStorage.getItem(draftKey(chatId));
+    setText(saved ?? "");
+    // Reset edit buffer on chat change.
+    preEditTextRef.current = null;
+    setEditingMessage(null);
+  // We intentionally only run on chatId — text setter is stable.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chatId]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (isEditing) return; // do not pollute draft with edit buffer
+    if (text) localStorage.setItem(draftKey(chatId), text);
+    else localStorage.removeItem(draftKey(chatId));
+  }, [text, chatId, isEditing]);
+
+  // ── Enter edit-mode: stash current draft, load message content ──────────
+  useEffect(() => {
+    if (!isEditing || !editingMessage) return;
+    if (preEditTextRef.current === null) {
+      preEditTextRef.current = text;
+    }
+    setText(editingMessage.content ?? "");
+    setTimeout(() => textareaRef.current?.focus(), 0);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editingMessage?.id]);
+
+  const exitEditMode = useCallback(() => {
+    setEditingMessage(null);
+    setText(preEditTextRef.current ?? "");
+    preEditTextRef.current = null;
+  }, [setEditingMessage]);
 
   const uploadAndSend = useCallback(async (file: File) => {
     if (!currentUser) return;
@@ -77,17 +121,26 @@ export function MessageInput({ chatId, replyTo, onCancelReply, onSend, onSendVoi
     );
   }, [onSend]);
 
-  const handleSend = useCallback(() => {
+  const handleSend = useCallback(async () => {
     const trimmed = text.trim();
     if (!trimmed) return;
-    onSend(trimmed);
-    setText("");
+    if (isEditing && editingMessage && onEdit) {
+      await onEdit(editingMessage.id, trimmed);
+      setEditingMessage(null);
+      setText(preEditTextRef.current ?? "");
+      preEditTextRef.current = null;
+    } else {
+      onSend(trimmed);
+      setText("");
+      // Clear the persisted draft for this chat.
+      if (typeof window !== "undefined") localStorage.removeItem(draftKey(chatId));
+    }
     setShowEmoji(false);
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
       textareaRef.current.focus();
     }
-  }, [text, onSend]);
+  }, [text, onSend, isEditing, editingMessage, onEdit, setEditingMessage, chatId]);
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); return; }
@@ -177,8 +230,25 @@ export function MessageInput({ chatId, replyTo, onCancelReply, onSend, onSendVoi
       )}
 
       <div className="px-3 pb-3 pt-2">
-        {/* Reply preview */}
-        {replyTo && (
+        {/* Edit preview takes priority over reply */}
+        {isEditing && editingMessage && (
+          <div className="flex items-center gap-2 rounded-t-xl px-3 py-2 mb-1"
+            style={{ background: "var(--tg-input)", borderLeft: "2px solid var(--tg-accent)" }}>
+            <Pencil size={13} style={{ color: "var(--tg-accent)", flexShrink: 0 }} />
+            <div className="flex-1 min-w-0">
+              <div className="text-xs font-semibold" style={{ color: "var(--tg-accent)" }}>Редактирование</div>
+              <div className="text-xs truncate" style={{ color: "var(--tg-text-secondary)" }}>
+                {editingMessage.content}
+              </div>
+            </div>
+            <button onClick={exitEditMode} className="p-1 rounded-full hover:bg-white/10 flex-shrink-0"
+              style={{ color: "var(--tg-text-secondary)" }}>
+              <X size={13} />
+            </button>
+          </div>
+        )}
+        {/* Reply preview (hidden while editing) */}
+        {!isEditing && replyTo && (
           <div className="flex items-center gap-2 rounded-t-xl px-3 py-2 mb-1"
             style={{ background: "var(--tg-input)", borderLeft: "2px solid var(--tg-accent)" }}>
             <Reply size={13} style={{ color: "var(--tg-accent)", flexShrink: 0 }} />

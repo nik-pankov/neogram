@@ -7,6 +7,7 @@ import { MessageList } from "./MessageList";
 import { MessageInput } from "./MessageInput";
 import { ChatSearchBar } from "./ChatSearchBar";
 import { ChatInfoPanel } from "./ChatInfoPanel";
+import { ForwardModal } from "./ForwardModal";
 import { useMessages } from "@/hooks/useMessages";
 import { useAppStore } from "@/store/app.store";
 import { createClient } from "@/lib/supabase/client";
@@ -18,8 +19,15 @@ interface ChatWindowProps {
 }
 
 export function ChatWindow({ chatId }: ChatWindowProps) {
-  const { messages, loading, isTyping, sendMessage, sendTyping, toggleReaction } = useMessages(chatId);
-  const { chats, currentUser, markChatRead } = useAppStore();
+  const {
+    messages, loading, isTyping,
+    sendMessage, sendTyping, toggleReaction,
+    editMessage, deleteMessage, togglePin, forwardMessage,
+  } = useMessages(chatId);
+  const {
+    chats, currentUser, markChatRead,
+    setEditingMessage, setForwardingMessage, forwardingMessage,
+  } = useAppStore();
 
   // Zero out unread badge when chat is opened
   useEffect(() => {
@@ -112,6 +120,10 @@ export function ChatWindow({ chatId }: ChatWindowProps) {
           messages={messages}
           onReply={setReplyTo}
           onReaction={toggleReaction}
+          onEdit={(msg) => setEditingMessage(msg)}
+          onDelete={(msg) => deleteMessage(msg.id)}
+          onTogglePin={(msg) => togglePin(msg.id, msg.pinned)}
+          onForward={(msg) => setForwardingMessage(msg)}
           bottomRef={bottomRef}
           isTyping={isTyping}
           highlightedId={highlightedId}
@@ -125,12 +137,23 @@ export function ChatWindow({ chatId }: ChatWindowProps) {
         replyTo={replyTo}
         onCancelReply={() => setReplyTo(null)}
         onSend={handleSend}
+        onEdit={editMessage}
         onSendVoice={handleSendVoice}
         onTyping={sendTyping}
       />
       </div>
       {showInfo && chat && (
         <ChatInfoPanel chat={chat} onClose={() => setShowInfo(false)} />
+      )}
+      {forwardingMessage && (
+        <ForwardModal
+          message={forwardingMessage}
+          onClose={() => setForwardingMessage(null)}
+          onForward={async (targetChatId) => {
+            await forwardMessage(forwardingMessage, targetChatId);
+            setForwardingMessage(null);
+          }}
+        />
       )}
     </div>
   );

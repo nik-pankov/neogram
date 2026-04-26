@@ -41,9 +41,14 @@ interface AppState {
   searchQuery: string
   setSearchQuery: (q: string) => void
 
-  // Reply/forward state
+  // Reply/forward/edit state — composer-level UI flags
   replyToMessage: MessageWithSender | null
   setReplyToMessage: (msg: MessageWithSender | null) => void
+  editingMessage: MessageWithSender | null
+  setEditingMessage: (msg: MessageWithSender | null) => void
+  /** When set, ForwardModal opens to pick a destination chat for this message. */
+  forwardingMessage: MessageWithSender | null
+  setForwardingMessage: (msg: MessageWithSender | null) => void
 
   // Mute
   mutedChatIds: string[]
@@ -116,6 +121,10 @@ export const useAppStore = create<AppState>((set) => ({
 
   replyToMessage: null,
   setReplyToMessage: (msg) => set({ replyToMessage: msg }),
+  editingMessage: null,
+  setEditingMessage: (msg) => set({ editingMessage: msg }),
+  forwardingMessage: null,
+  setForwardingMessage: (msg) => set({ forwardingMessage: msg }),
 
   mutedChatIds: typeof window !== 'undefined'
     ? JSON.parse(localStorage.getItem('ng_muted') ?? '[]')

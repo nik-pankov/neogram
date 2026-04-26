@@ -8,7 +8,7 @@ import { useAppStore } from "@/store/app.store";
 export function useMessages(chatId: string | null) {
   const [loading, setLoading] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
-  const { messages, setMessages, addMessage, replaceMessage, currentUser, mutedChatIds } = useAppStore();
+  const { messages, setMessages, addMessage, replaceMessage, removeMessage, currentUser, mutedChatIds } = useAppStore();
 
   const supabase = createClient(); // REST-операции
   const rt = getRealtimeClient();  // WebSocket каналы
@@ -111,8 +111,13 @@ export function useMessages(chatId: string | null) {
       .on(
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "messages" },
-        async (payload: { new: { id: string; chat_id: string } }) => {
+        async (payload: { new: { id: string; chat_id: string; deleted_at: string | null } }) => {
           if (payload.new.chat_id !== chatIdRef.current) return;
+          // Soft-delete: remove from store entirely so the bubble disappears.
+          if (payload.new.deleted_at) {
+            removeMessage(payload.new.chat_id, payload.new.id);
+            return;
+          }
           const { data } = await supabase
             .from("messages")
             .select("*, sender:profiles!user_id(*), reactions(*)")
@@ -178,6 +183,66 @@ export function useMessages(chatId: string | null) {
     return data;
   }, [chatId, supabase, addMessage, replaceMessage]);
 
+  // ── Edit ────────────────────────────────────────────────────────────────
+  // UPDATE the row; the realtime UPDATE handler above will replace the message
+  // with the freshly-joined data, so no manual store push is needed here.
+  const editMessage = useCallback(async (messageId: string, newContent: string) => {
+    const trimmed = newContent.trim();
+    if (!chatId || !trimmed) return;
+    const { error } = await supabase
+      .from("messages")
+      .update({ content: trimmed, edited_at: new Date().toISOString() })
+      .eq("id", messageId);
+    if (error) console.error("Edit error:", error);
+  }, [chatId, supabase]);
+
+  // ── Delete (soft) ───────────────────────────────────────────────────────
+  // Set deleted_at; realtime UPDATE handler removes the bubble from view.
+  const deleteMessage = useCallback(async (messageId: string) => {
+    if (!chatId) return;
+    const { error } = await supabase
+      .from("messages")
+      .update({ deleted_at: new Date().toISOString() })
+      .eq("id", messageId);
+    if (error) console.error("Delete error:", error);
+  }, [chatId, supabase]);
+
+  // ── Pin / unpin ─────────────────────────────────────────────────────────
+  const togglePin = useCallback(async (messageId: string, currentlyPinned: boolean) => {
+    if (!chatId) return;
+    const { error } = await supabase
+      .from("messages")
+      .update({ pinned: !currentlyPinned })
+      .eq("id", messageId);
+    if (error) console.error("Pin error:", error);
+  }, [chatId, supabase]);
+
+  // ── Forward ─────────────────────────────────────────────────────────────
+  // Insert a copy of the message into a target chat.  We carry over content,
+  // type and media_url, and link back via forwarded_from_id.
+  const forwardMessage = useCallback(async (
+    src: MessageWithSender,
+    targetChatId: string,
+  ) => {
+    const user = currentUserRef.current;
+    if (!user) return null;
+    const { data, error } = await supabase
+      .from("messages")
+      .insert({
+        chat_id: targetChatId,
+        user_id: user.id,
+        content: src.content,
+        type: src.type,
+        media_url: src.media_url,
+        forwarded_from_id: src.id,
+      })
+      .select("*, sender:profiles!user_id(*), reactions(*)")
+      .single();
+    if (error) { console.error("Forward error:", error); return null; }
+    await supabase.from("chats").update({ updated_at: new Date().toISOString() }).eq("id", targetChatId);
+    return data;
+  }, [supabase]);
+
   const toggleReaction = useCallback(async (messageId: string, emoji: string) => {
     const user = currentUserRef.current;
     if (!user) return;
@@ -199,6 +264,9 @@ export function useMessages(chatId: string | null) {
 
   return {
     messages: messages[chatId ?? ""] ?? [],
-    loading, isTyping, sendMessage, sendTyping, toggleReaction, refetch: fetchMessages,
+    loading, isTyping,
+    sendMessage, sendTyping, toggleReaction,
+    editMessage, deleteMessage, togglePin, forwardMessage,
+    refetch: fetchMessages,
   };
 }

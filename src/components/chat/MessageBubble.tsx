@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
-import { Check, CheckCheck, Clock, AlertCircle, Reply, Forward, Trash2, Pin, Copy, Smile, FileText } from "lucide-react";
+import { Check, CheckCheck, Clock, AlertCircle, Reply, Forward, Trash2, Pin, PinOff, Pencil, Copy, Smile, FileText } from "lucide-react";
 import type { MessageWithSender } from "@/types/database";
 import { formatFullTime } from "@/lib/format";
 import { UserAvatar } from "@/components/ui/ChatAvatar";
@@ -25,6 +25,11 @@ interface MessageBubbleProps {
   isLastInGroup: boolean;
   onReply: () => void;
   onReaction: (emoji: string) => void;
+  /** Set composer into edit-mode for this message. Only invoked for own messages. */
+  onEdit?: () => void;
+  onDelete?: () => void;
+  onTogglePin?: () => void;
+  onForward?: () => void;
   usersMap?: Record<string, string>;
   messagesMap?: Record<string, MessageWithSender>;
   isRead?: boolean; // true = other person has read this message
@@ -37,6 +42,10 @@ export function MessageBubble({
   isLastInGroup,
   onReply,
   onReaction,
+  onEdit,
+  onDelete,
+  onTogglePin,
+  onForward,
   usersMap = {},
   messagesMap = {},
   isRead,
@@ -81,12 +90,29 @@ export function MessageBubble({
     if (longPressTimer.current) clearTimeout(longPressTimer.current);
   }, []);
 
+  // Build context menu dynamically — own messages get Edit + Delete, foreign
+  // messages do not.  Pin and Forward are universal.
   const contextItems: ContextItem[] = [
     { icon: Reply, label: "Ответить", action: () => { onReply(); setShowContext(false); } },
-    { icon: Copy, label: "Копировать", action: () => { navigator.clipboard.writeText(message.content ?? ""); setShowContext(false); } },
-    { icon: Pin, label: "Закрепить", action: () => setShowContext(false) },
-    { icon: Forward, label: "Переслать", action: () => setShowContext(false) },
-    { icon: Trash2, label: "Удалить", danger: true, action: () => setShowContext(false) },
+    { icon: Copy,  label: "Копировать", action: () => { navigator.clipboard.writeText(message.content ?? ""); setShowContext(false); } },
+    ...(isMe && message.type === "text" && onEdit ? [
+      { icon: Pencil, label: "Изменить", action: () => { onEdit(); setShowContext(false); } },
+    ] : []),
+    ...(onTogglePin ? [{
+      icon: message.pinned ? PinOff : Pin,
+      label: message.pinned ? "Открепить" : "Закрепить",
+      action: () => { onTogglePin(); setShowContext(false); },
+    }] : []),
+    ...(onForward ? [
+      { icon: Forward, label: "Переслать", action: () => { onForward(); setShowContext(false); } },
+    ] : []),
+    ...(isMe && onDelete ? [
+      { icon: Trash2, label: "Удалить", danger: true, action: () => {
+          if (confirm("Удалить сообщение?")) onDelete();
+          setShowContext(false);
+        }
+      },
+    ] : []),
   ];
 
   return (
