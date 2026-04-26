@@ -2,6 +2,7 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
+import { useHeartbeat } from "@/hooks/useHeartbeat";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   // Request browser notification permission once
@@ -10,6 +11,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
       Notification.requestPermission();
     }
   }, []);
+
+  // Keep the user's online_at fresh while a session exists.
+  // The hook reads currentUser from the global store and no-ops when it's null.
+  useHeartbeat();
 
   const [queryClient] = useState(
     () =>

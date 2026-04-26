@@ -21,6 +21,11 @@ export function ChatListItem({ chat, isSelected, onClick }: ChatListItemProps) {
   const hasUnread = (chat.unread_count ?? 0) > 0;
   const isMuted = chat.is_muted;
   const isPinned = chat.is_pinned;
+  // Show the green dot only for private chats where the other user pinged
+  // the heartbeat within the last 90 seconds (tolerates ~3 missed ticks).
+  const isOtherOnline = chat.type === "private"
+    && !!chat.other_user?.online_at
+    && Date.now() - new Date(chat.other_user.online_at).getTime() < 90_000;
 
   const getMessagePreview = () => {
     if (!lastMsg) return "Сообщений пока нет";
@@ -48,8 +53,8 @@ export function ChatListItem({ chat, isSelected, onClick }: ChatListItemProps) {
       {/* Avatar */}
       <div className="flex-shrink-0 relative">
         <ChatAvatar chat={chat} size="md" />
-        {/* Online indicator for private chats */}
-        {chat.type === "private" && chat.id === "1" && (
+        {/* Real online indicator: derived from other_user.online_at */}
+        {isOtherOnline && (
           <span
             className="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2"
             style={{ background: "var(--tg-online)", borderColor: isSelected ? "var(--tg-active)" : "var(--tg-sidebar)" }}

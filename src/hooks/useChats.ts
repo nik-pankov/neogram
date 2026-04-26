@@ -105,5 +105,20 @@ export function useChats() {
     document.title = total > 0 ? `(${total}) КУБ` : "КУБ";
   }, [chats]);
 
+  // Refresh chats when the tab becomes visible again or the window regains
+  // focus.  This pulls fresh online_at on other users so the green dot and
+  // "был N мин назад" don't sit at stale values after you've been away.
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === "visible") fetchChats();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", onVisible);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", onVisible);
+    };
+  }, [fetchChats]);
+
   return { chats, loading, refetch: fetchChats };
 }
