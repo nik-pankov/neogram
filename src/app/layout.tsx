@@ -3,13 +3,13 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 
 export const metadata: Metadata = {
-  title: "NeoGram",
-  description: "Быстрый и безопасный мессенджер",
+  title: "КУБ",
+  description: "КУБ — быстрый и безопасный мессенджер",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "NeoGram",
+    title: "КУБ",
   },
 };
 

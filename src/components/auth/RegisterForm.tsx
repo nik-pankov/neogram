@@ -89,7 +89,7 @@ export function RegisterForm() {
           </div>
           <div className="text-center">
             <h1 className="text-2xl font-bold" style={{ color: "var(--tg-text)" }}>Создать аккаунт</h1>
-            <p className="text-sm mt-1" style={{ color: "var(--tg-text-secondary)" }}>Присоединяйтесь к NeoGram</p>
+            <p className="text-sm mt-1" style={{ color: "var(--tg-text-secondary)" }}>Присоединяйтесь к КУБу</p>
           </div>
         </div>
 

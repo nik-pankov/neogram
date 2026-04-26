@@ -102,7 +102,7 @@ export function useChats() {
   // Keep tab title in sync
   useEffect(() => {
     const total = chats.reduce((s, c) => s + (c.unread_count ?? 0), 0);
-    document.title = total > 0 ? `(${total}) NeoGram` : "NeoGram";
+    document.title = total > 0 ? `(${total}) КУБ` : "КУБ";
   }, [chats]);
 
   return { chats, loading, refetch: fetchChats };

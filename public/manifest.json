@@ -1,7 +1,7 @@
 {
-  "name": "NeoGram",
-  "short_name": "NeoGram",
-  "description": "Fast and secure messenger",
+  "name": "КУБ",
+  "short_name": "КУБ",
+  "description": "Быстрый и безопасный мессенджер",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#17212b",

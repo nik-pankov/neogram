@@ -20,7 +20,7 @@ export function WelcomeScreen() {
         {/* Title */}
         <div>
           <h2 className="text-2xl font-bold mb-2" style={{ color: "var(--tg-text)" }}>
-            NeoGram
+            КУБ
           </h2>
           <p className="text-sm leading-relaxed" style={{ color: "var(--tg-text-secondary)" }}>
             Выберите чат из списка слева, чтобы начать общение.
