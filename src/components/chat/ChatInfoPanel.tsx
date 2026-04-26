@@ -250,16 +250,25 @@ export function ChatInfoPanel({ chat, onClose }: ChatInfoPanelProps) {
                     const next = !chat.is_forum;
                     if (next && !confirm("Включить режим топиков? Все будущие сообщения попадут в топики.")) return;
                     if (!next && !confirm("Выключить режим топиков? Топики останутся, но сообщения снова будут в общем потоке.")) return;
-                    await supabase.from("chats").update({ is_forum: next }).eq("id", chat.id);
+                    const { error: updErr } = await supabase
+                      .from("chats")
+                      .update({ is_forum: next })
+                      .eq("id", chat.id);
+                    if (updErr) {
+                      console.error("toggle is_forum failed:", updErr);
+                      alert("Не удалось переключить режим топиков: " + updErr.message + ".\n\nСкорее всего, не применена SQL-миграция в Supabase. Открой SQL Editor и выполни миграцию из supabase/migrations/20260427_topics.sql.");
+                      return;
+                    }
                     setChats(chats.map((c) => c.id === chat.id ? { ...c, is_forum: next } : c));
                     if (next) {
                       // Create the default "Общий" topic if there isn't one yet.
                       const { data: existing } = await supabase
                         .from("topics").select("id").eq("chat_id", chat.id).eq("is_general", true).maybeSingle();
                       if (!existing) {
-                        await supabase.from("topics").insert({
+                        const { error: tErr } = await supabase.from("topics").insert({
                           chat_id: chat.id, name: "Общий", emoji: "💬", is_general: true, position: 0,
                         });
+                        if (tErr) console.error("create general topic failed:", tErr);
                       }
                     }
                   }}
