@@ -16,6 +16,12 @@ LOCK="/tmp/neogram-deploy.lock"
 # 4 GB swap configured on the host, this keeps the box stable.
 export NODE_OPTIONS="--max-old-space-size=512"
 
+# Give npm a writable cache directory.  The webhook.service unit hardens with
+# ProtectHome=read-only, which makes /home/deploy/.npm (npm's default cache)
+# unwritable.  /tmp is writable thanks to PrivateTmp=true on the unit.
+export npm_config_cache="${TMPDIR:-/tmp}/npm-cache"
+mkdir -p "$npm_config_cache"
+
 # Single-flight: never run two deploys at once.
 exec 9>"$LOCK"
 if ! flock -n 9; then
