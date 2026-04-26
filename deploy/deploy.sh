@@ -10,6 +10,12 @@ APP_DIR="/var/www/neogram"
 LOG_DIR="/var/log/neogram"
 LOCK="/tmp/neogram-deploy.lock"
 
+# Cap Node heap during install + build so the 1 GB VPS doesn't get OOM-killed.
+# 512 MB old-space is plenty for `next build` of this app and leaves headroom
+# for pm2-web (~70 MB) + pm2-bot (~30 MB) + nginx + system. Combined with the
+# 4 GB swap configured on the host, this keeps the box stable.
+export NODE_OPTIONS="--max-old-space-size=512"
+
 # Single-flight: never run two deploys at once.
 exec 9>"$LOCK"
 if ! flock -n 9; then
