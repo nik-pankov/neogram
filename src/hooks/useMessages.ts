@@ -8,7 +8,7 @@ import { useAppStore } from "@/store/app.store";
 export function useMessages(chatId: string | null) {
   const [loading, setLoading] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
-  const { messages, setMessages, addMessage, currentUser, mutedChatIds } = useAppStore();
+  const { messages, setMessages, addMessage, replaceMessage, currentUser, mutedChatIds } = useAppStore();
 
   const supabase = createClient(); // REST-операции
   const rt = getRealtimeClient();  // WebSocket каналы
@@ -131,16 +131,52 @@ export function useMessages(chatId: string | null) {
 
   const sendMessage = useCallback(async (content: string, replyToId?: string) => {
     const user = currentUserRef.current;
-    if (!chatId || !user || !content.trim()) return null;
+    const trimmed = content.trim();
+    if (!chatId || !user || !trimmed) return null;
+
+    // 1) Optimistic: render the message instantly with a temporary id.
+    //    The real DB id will replace `tempId` when INSERT returns; the realtime
+    //    echo that follows is deduped by the upsert in addMessage.
+    const tempId = `tmp:${crypto.randomUUID()}`;
+    const optimistic: MessageWithSender = {
+      id: tempId,
+      chat_id: chatId,
+      user_id: user.id,
+      content: trimmed,
+      type: "text",
+      media_url: null,
+      reply_to_id: replyToId ?? null,
+      forwarded_from_id: null,
+      edited_at: null,
+      deleted_at: null,
+      pinned: false,
+      created_at: new Date().toISOString(),
+      sender: user,
+      reactions: [],
+      pending: true,
+    };
+    addMessage(chatId, optimistic);
+
+    // 2) Real INSERT.
     const { data, error } = await supabase
       .from("messages")
-      .insert({ chat_id: chatId, user_id: user.id, content: content.trim(), type: "text", reply_to_id: replyToId ?? null })
+      .insert({ chat_id: chatId, user_id: user.id, content: trimmed, type: "text", reply_to_id: replyToId ?? null })
       .select("*, sender:profiles!user_id(*), reactions(*)")
       .single();
-    if (error) { console.error("Send error:", error); return null; }
+
+    if (error || !data) {
+      console.error("Send error:", error);
+      // Mark as failed but keep the bubble visible so the user can see something went wrong.
+      replaceMessage(chatId, tempId, { ...optimistic, pending: false, failed: true });
+      return null;
+    }
+
+    // 3) Swap the temp message for the canonical server copy.
+    replaceMessage(chatId, tempId, data as unknown as MessageWithSender);
+
     await supabase.from("chats").update({ updated_at: new Date().toISOString() }).eq("id", chatId);
     return data;
-  }, [chatId, supabase]);
+  }, [chatId, supabase, addMessage, replaceMessage]);
 
   const toggleReaction = useCallback(async (messageId: string, emoji: string) => {
     const user = currentUserRef.current;

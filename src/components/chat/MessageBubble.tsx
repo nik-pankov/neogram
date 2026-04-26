@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
-import { Check, CheckCheck, Reply, Forward, Trash2, Pin, Copy, Smile, FileText } from "lucide-react";
+import { Check, CheckCheck, Clock, AlertCircle, Reply, Forward, Trash2, Pin, Copy, Smile, FileText } from "lucide-react";
 import type { MessageWithSender } from "@/types/database";
 import { formatFullTime } from "@/lib/format";
 import { UserAvatar } from "@/components/ui/ChatAvatar";
@@ -201,12 +201,15 @@ export function MessageBubble({
           {/* Bubble */}
           <div
             className={cn(
-              "relative px-3 py-2 rounded-2xl",
+              "relative px-3 py-2 rounded-2xl transition-opacity",
               isMe
                 ? cn("rounded-br-sm", message.reply_to_id && "rounded-tr-none")
                 : cn("rounded-bl-sm", message.reply_to_id && "rounded-tl-none"),
               isMe && isLastInGroup ? "bubble-out" : "",
               !isMe && isLastInGroup ? "bubble-in" : "",
+              // Pending: dim slightly until the server confirms.  Failed: dim a bit more.
+              message.pending && "opacity-70",
+              message.failed && "opacity-60",
             )}
             style={{ background: bgColor }}
           >
@@ -287,9 +290,15 @@ export function MessageBubble({
                 {formatFullTime(message.created_at)}
               </span>
               {isMe && (
-                isRead
-                  ? <CheckCheck size={13} style={{ color: "var(--tg-accent)" }} />
-                  : <Check size={13} style={{ color: "rgba(255,255,255,0.45)" }} />
+                message.failed ? (
+                  <AlertCircle size={13} style={{ color: "#ef4444" }} aria-label="Failed to send" />
+                ) : message.pending ? (
+                  <Clock size={13} style={{ color: "rgba(255,255,255,0.45)" }} aria-label="Sending…" />
+                ) : isRead ? (
+                  <CheckCheck size={13} style={{ color: "var(--tg-accent)" }} />
+                ) : (
+                  <Check size={13} style={{ color: "rgba(255,255,255,0.45)" }} />
+                )
               )}
             </div>
           </div>

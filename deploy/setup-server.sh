@@ -42,7 +42,8 @@ apt-get update -y
 apt-get upgrade -y
 
 echo "▶ 2/8  Installing base packages…"
-apt-get install -y curl git ufw build-essential nginx ca-certificates gnupg
+apt-get install -y curl git ufw build-essential nginx ca-certificates gnupg \
+  certbot python3-certbot-nginx
 
 echo "▶ 3/8  Installing Node.js 22 LTS…"
 if ! command -v node >/dev/null 2>&1; then
@@ -89,6 +90,9 @@ read -r
 echo "▶ 7/8  Cloning repo to $APP_DIR…"
 mkdir -p "$APP_DIR"
 chown "$APP_USER:$APP_USER" "$APP_DIR"
+# pm2 + deploy.sh write here; create up front so deploy doesn't trip on perms
+mkdir -p /var/log/neogram
+chown "$APP_USER:$APP_USER" /var/log/neogram
 if [[ ! -d "$APP_DIR/.git" ]]; then
   sudo -u "$APP_USER" git clone "$REPO_URL" "$APP_DIR"
 fi

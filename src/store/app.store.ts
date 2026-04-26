@@ -18,8 +18,18 @@ interface AppState {
   // Messages
   messages: Record<string, MessageWithSender[]>
   setMessages: (chatId: string, messages: MessageWithSender[]) => void
+  /**
+   * Insert OR replace by id. Used both for new messages from realtime AND for replacing
+   * an optimistic message in place when the realtime echo arrives with richer data.
+   */
   addMessage: (chatId: string, message: MessageWithSender) => void
   updateMessage: (chatId: string, message: MessageWithSender) => void
+  /**
+   * Optimistic helper: swap a message with a known oldId for one whose id may differ
+   * (e.g. temporary `tmp:…` id → real DB uuid after INSERT returns).
+   */
+  replaceMessage: (chatId: string, oldId: string, message: MessageWithSender) => void
+  removeMessage: (chatId: string, id: string) => void
 
   // Active folder
   activeFolderId: string | null
@@ -61,12 +71,15 @@ export const useAppStore = create<AppState>((set) => ({
   setMessages: (chatId, msgs) =>
     set((state) => ({ messages: { ...state.messages, [chatId]: msgs } })),
   addMessage: (chatId, message) =>
-    set((state) => ({
-      messages: {
-        ...state.messages,
-        [chatId]: [...(state.messages[chatId] || []), message],
-      },
-    })),
+    set((state) => {
+      const existing = state.messages[chatId] || []
+      const idx = existing.findIndex((m) => m.id === message.id)
+      // Upsert: if a message with this id is already in the store (e.g. optimistic copy
+      // already replaced with real data, then realtime echo arrives), replace it in place
+      // rather than appending a duplicate.
+      const next = idx === -1 ? [...existing, message] : existing.map((m, i) => (i === idx ? message : m))
+      return { messages: { ...state.messages, [chatId]: next } }
+    }),
   updateMessage: (chatId, message) =>
     set((state) => ({
       messages: {
@@ -74,6 +87,22 @@ export const useAppStore = create<AppState>((set) => ({
         [chatId]: (state.messages[chatId] || []).map((m) =>
           m.id === message.id ? message : m
         ),
+      },
+    })),
+  replaceMessage: (chatId, oldId, message) =>
+    set((state) => ({
+      messages: {
+        ...state.messages,
+        [chatId]: (state.messages[chatId] || []).map((m) =>
+          m.id === oldId ? message : m
+        ),
+      },
+    })),
+  removeMessage: (chatId, id) =>
+    set((state) => ({
+      messages: {
+        ...state.messages,
+        [chatId]: (state.messages[chatId] || []).filter((m) => m.id !== id),
       },
     })),
 

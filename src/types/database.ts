@@ -271,4 +271,8 @@ export interface MessageWithSender extends Message {
   sender?: Profile
   reactions?: (Reaction & { user?: Profile })[]
   reply_to?: MessageWithSender
+  /** Optimistic UI: true while the INSERT is in flight. Cleared once the server returns. */
+  pending?: boolean
+  /** Optimistic UI: true if the INSERT failed; lets MessageBubble show a retry/error icon. */
+  failed?: boolean
 }
