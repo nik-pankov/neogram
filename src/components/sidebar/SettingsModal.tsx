@@ -1,16 +1,18 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { ArrowLeft, Camera, Check, Trash2, Phone, User, AtSign, Info, Loader2, Sun, Moon } from "lucide-react";
+import { ArrowLeft, Camera, Check, Trash2, Phone, User, AtSign, Info, Loader2, Sun, Moon, Bell, BellOff } from "lucide-react";
 import { useAppStore } from "@/store/app.store";
 import { createClient } from "@/lib/supabase/client";
 import { UserAvatar } from "@/components/ui/ChatAvatar";
 import { useTheme } from "@/hooks/useTheme";
+import { usePush } from "@/hooks/usePush";
 
 export function SettingsModal({ onClose }: { onClose: () => void }) {
   const { currentUser, setCurrentUser } = useAppStore();
   const supabase = createClient();
   const { theme, setTheme } = useTheme();
+  const { status: pushStatus, enable: enablePush, disable: disablePush } = usePush();
 
   const [fullName, setFullName] = useState(currentUser?.full_name ?? "");
   const [username, setUsername] = useState(currentUser?.username ?? "");
@@ -208,6 +210,45 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
                     </button>
                   ))}
                 </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Notifications section */}
+          <div className="px-4 py-4" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+            <p className="text-xs font-semibold uppercase tracking-wider px-1 mb-3"
+              style={{ color: "var(--tg-text-secondary)" }}>Уведомления</p>
+            <div className="rounded-2xl overflow-hidden" style={{ background: "var(--tg-input)" }}>
+              <div className="flex items-center gap-3 px-4 py-3">
+                {pushStatus === "active" ? (
+                  <Bell size={16} style={{ color: "var(--tg-accent)" }} />
+                ) : (
+                  <BellOff size={16} style={{ color: "var(--tg-text-secondary)" }} />
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm" style={{ color: "var(--tg-text)" }}>
+                    Push-уведомления
+                  </div>
+                  <div className="text-xs" style={{ color: "var(--tg-text-secondary)" }}>
+                    {pushStatus === "unsupported" && "Браузер не поддерживает"}
+                    {pushStatus === "denied" && "Заблокировано в настройках браузера"}
+                    {pushStatus === "inactive" && "Получать уведомления, даже когда вкладка закрыта"}
+                    {pushStatus === "active" && "Включены"}
+                  </div>
+                </div>
+                {pushStatus === "active" ? (
+                  <button onClick={disablePush}
+                    className="px-3 py-1 rounded-full text-xs font-medium"
+                    style={{ background: "rgba(255,255,255,0.08)", color: "var(--tg-text)" }}>
+                    Выключить
+                  </button>
+                ) : pushStatus === "inactive" ? (
+                  <button onClick={enablePush}
+                    className="px-3 py-1 rounded-full text-xs font-medium"
+                    style={{ background: "var(--tg-accent)", color: "#fff" }}>
+                    Включить
+                  </button>
+                ) : null}
               </div>
             </div>
           </div>

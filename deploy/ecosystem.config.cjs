@@ -36,5 +36,21 @@ module.exports = {
       merge_logs: true,
       time: true,
     },
+    {
+      name: "neogram-push",
+      cwd: "/var/www/neogram/push-worker",
+      script: "index.js",
+      exec_mode: "fork",
+      instances: 1,
+      max_memory_restart: "200M",
+      env: {
+        NODE_ENV: "production",
+      },
+      // push-worker/.env holds Supabase service role + VAPID keys.
+      out_file: "/var/log/neogram/push.out.log",
+      error_file: "/var/log/neogram/push.err.log",
+      merge_logs: true,
+      time: true,
+    },
   ],
 };

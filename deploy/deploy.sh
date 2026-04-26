@@ -50,6 +50,9 @@ NODE_ENV=production npm run build
 echo "▶ npm ci (bot)"
 ( cd bot && npm ci --no-audit --no-fund --omit=dev )
 
+echo "▶ npm ci (push-worker)"
+( cd push-worker && npm ci --no-audit --no-fund --omit=dev )
+
 echo "▶ pm2 reload"
 # startOrReload on first run starts processes, on subsequent runs does zero-downtime reload.
 # Note: the manifest is .cjs because deploy/package.json declares "type": "module"
