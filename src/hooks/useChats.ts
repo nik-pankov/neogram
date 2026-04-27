@@ -33,6 +33,8 @@ export function useChats() {
 
     const enriched: ChatWithLastMessage[] = await Promise.all(
       chatsData.map(async (chat) => {
+        // maybeSingle: empty chats (no messages yet) return null instead of
+        // raising a 406 — important for freshly-created groups.
         const { data: lastMsgData } = await supabase
           .from("messages")
           .select("*, sender:profiles(*)")
@@ -40,7 +42,7 @@ export function useChats() {
           .is("deleted_at", null)
           .order("created_at", { ascending: false })
           .limit(1)
-          .single();
+          .maybeSingle();
 
         const myMembership = (chat.members as { user_id: string; last_read_at: string | null }[])
           ?.find((m) => m.user_id === currentUser.id);
