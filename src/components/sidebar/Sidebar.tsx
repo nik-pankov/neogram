@@ -15,7 +15,14 @@ import type { Folder } from "@/types/database";
 export function Sidebar() {
   const { selectedChatId, setSelectedChatId, searchQuery } = useAppStore();
   const { chats, loading, refetch } = useChats();
-  const { folders, folderChats } = useFolders();
+  const {
+    folders,
+    folderChats,
+    createFolder,
+    updateFolder,
+    deleteFolder,
+    setChatsForFolder,
+  } = useFolders();
   // activeFolder = null → "Все" tab; otherwise — id of a custom folder.
   const [activeFolder, setActiveFolder] = useState<string | null>(null);
   const [showNewChat, setShowNewChat] = useState(false);
@@ -86,6 +93,11 @@ export function Sidebar() {
         <FolderEditModal
           folder={editingFolder === "new" ? null : editingFolder}
           onClose={() => setEditingFolder(null)}
+          folderChats={folderChats}
+          createFolder={createFolder}
+          updateFolder={updateFolder}
+          deleteFolder={deleteFolder}
+          setChatsForFolder={setChatsForFolder}
         />
       )}
     </div>

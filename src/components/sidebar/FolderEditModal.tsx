@@ -5,7 +5,6 @@ import { X, Loader2, Trash2, Check } from "lucide-react";
 import type { Folder, ChatWithLastMessage } from "@/types/database";
 import { useAppStore } from "@/store/app.store";
 import { ChatAvatar } from "@/components/ui/ChatAvatar";
-import { useFolders } from "@/hooks/useFolders";
 
 const QUICK_EMOJI = ["👤", "💼", "📢", "📌", "🔥", "🏠", "🎓", "💬", "❤️", "📦"];
 
@@ -13,15 +12,31 @@ interface FolderEditModalProps {
   /** When provided — edit mode for that folder.  When null — create mode. */
   folder: Folder | null;
   onClose: () => void;
+  // Data + mutations are passed in from Sidebar, which owns the single
+  // useFolders subscription.  Calling useFolders inside this modal would
+  // create a second channel with the same name and crash supabase-realtime
+  // ("cannot add postgres_changes callbacks ... after subscribe()").
+  folderChats: Record<string, Set<string>>;
+  createFolder: (name: string, emoji: string | null) => Promise<Folder | null>;
+  updateFolder: (id: string, patch: { name?: string; emoji?: string | null }) => Promise<void>;
+  deleteFolder: (id: string) => Promise<void>;
+  setChatsForFolder: (folderId: string, chatIds: string[]) => Promise<void>;
 }
 
 /**
  * Single dialog for both creating and editing a sidebar folder.
  * Lets the user pick name, emoji, and which chats belong to it.
  */
-export function FolderEditModal({ folder, onClose }: FolderEditModalProps) {
+export function FolderEditModal({
+  folder,
+  onClose,
+  folderChats,
+  createFolder,
+  updateFolder,
+  deleteFolder,
+  setChatsForFolder,
+}: FolderEditModalProps) {
   const { chats } = useAppStore();
-  const { folderChats, createFolder, updateFolder, deleteFolder, setChatsForFolder } = useFolders();
 
   const [name, setName] = useState(folder?.name ?? "");
   const [emoji, setEmoji] = useState<string | null>(folder?.emoji ?? null);
